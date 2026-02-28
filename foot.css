@@ -1,0 +1,124 @@
+:root {
+    --primary-color: #2e7d32;
+    --secondary-color: #2e7d32;
+    --text-color: #1a1a1a;
+    --light-bg: #f9fbe7;
+    --white: #f1f8e9;
+    --input-border: #2e7d32;
+    --black: #1a1a1a;
+}
+
+#footer {
+  background-color: #a4e0a8;
+  color: #ffffff;
+  padding: 40px 0 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  font-size: 16px;
+}
+.footer-container {
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  margin-bottom: -10PX;
+}
+ .footer-columns{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+ }
+
+/* Make three columns span left, center, right */
+.footer-about,
+.links,
+.footer-social {
+  flex: 1 1 0;
+}
+
+
+.links h6,
+.footer-social h6,
+.footer-about h5 { 
+    margin-bottom: 14px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.footer-about p {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #ffffff;
+    font-weight: 400;
+}
+
+.links ul li { 
+    margin: 8px 0;
+    font-size: 1rem;
+}
+
+.links a { 
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.links a:hover { 
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.footer-social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  color: #ffffff;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.footer-social a:first-of-type { margin-left: 0; }
+
+.footer-social a:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-2px);
+}
+ .small{
+  font-size: 14px;
+  color: #ffffff;
+  text-align: center;
+  margin-top: 28px;
+ }
+ 
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Responsive stacking */
+@media (max-width: 992px) {
+  .footer-columns { gap: 24px; }
+}
+
+@media (max-width: 768px) {
+  .footer-columns {
+    flex-direction: column;
+    text-align: center;
+  }
+  .footer-about, .links, .footer-social { text-align: center; }
+  .footer-social a { margin: 6px; }
+}
+
