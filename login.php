@@ -1,45 +1,39 @@
 <?php
+include './dbcon/connection.php';
 session_start();
 
-$message = '';
+$message = ''; // Initialize message variable to prevent undefined warnings
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // include './dbcon/connection.php';
-     $con = mysqli_connect('localhost','root', 1234,'project');
-    if (isset($_POST['Sub']))
-        {
-            $name = $_POST['name'];
-            $email = $_POST['email'];
-            $password = $_POST['password'];
-            $qery = "INSERT INTO project (name, email, password) VALUES ('$name', '$email', '$password')";
-            $execute =mysqli_query($con, $qery);
+if (isset($_POST['login'])) {
+    $email = trim($_POST['email']);
+    $password = $_POST['password'];
 
-    }
-    
-     /*
-     MANUAL DATABASE SETUP (SIGN IN)
-     1) Include your DB connection file here:
-         include './dbcon/connection.php';
-
-     2) After validating input below, add your logic to:
-         - Find user by username or email
-         - Verify password using password_verify()
-         - Set session values
-         - Redirect user/admin
-
-     Example structure:
-         $safeUsername = mysqli_real_escape_string($conn, $username);
-         $sql = "SELECT * FROM users WHERE username='$safeUsername' OR email='$safeUsername'";
-         // fetch user, verify password, then redirect
-     */
-
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
-
-    if ($username === '' || $password === '') {
-        $message = '<div class="alert alert-danger">Username/Email and password are required.</div>';
+    if (empty($email) || empty($password)) {
+        $message = '<div class="alert alert-danger">Please fill in all fields.</div>';
     } else {
-        $message = '<div class="alert alert-success">Sign-in form submitted. Add your database connection and authentication logic here.</div>';
+        // Prepare the SQL statement to find the user
+        $stmt = $conn->prepare("SELECT email, password FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        // Check if user exists
+        if ($result->num_rows === 1) {
+            $row = $result->fetch_assoc();
+
+            // Verify the password against the hashed version in DB
+            if (password_verify($password, $row['password'])) {
+                // Success! Set session and redirect
+                $_SESSION['email'] = $row['email'];
+                header("Location: index.php");
+                exit();
+            } else {
+                $message = '<div class="alert alert-danger">Invalid email or password.</div>';
+            }
+        } else {
+            $message = '<div class="alert alert-danger">Invalid email or password.</div>';
+        }
+        $stmt->close();
     }
 }
 ?>
@@ -54,12 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <style>
         :root {
             --primary-color: #2e7d32;
-            --secondary-color: #2e7d32;
             --text-color: #333;
             --light-bg: #f9fbe7;
             --white: #f1f8e9;
             --input-border: #2e7d32;
-            --black: #333;
         }
 
         body {
@@ -87,32 +79,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             padding-bottom: 20px;
         }
 
-        .login-header i {
-            font-size: 50px;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-            display: block;
-        }
-
         .login-header h2 {
             color: var(--primary-color);
             font-weight: bold;
             margin: 0;
         }
 
-        .login-header p {
-            color: var(--text-color);
-            margin-bottom: 0;
-        }
-
         .form-label {
             color: var(--primary-color);
             font-weight: bold;
             margin-bottom: 0.5rem;
-        }
-
-        .form-label i {
-            margin-right: 0.5rem;
         }
 
         .form-control {
@@ -128,11 +104,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-color: var(--primary-color);
             box-shadow: 0 0 10px rgba(46, 125, 50, 0.2);
             background-color: white;
-            color: var(--text-color);
-        }
-
-        .form-control::placeholder {
-            color: #999;
         }
 
         .btn-login {
@@ -153,71 +124,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             color: white;
         }
 
-        .alert {
-            border-radius: 6px;
-            border-left: 4px solid;
-            margin-bottom: 1.5rem;
-        }
-
-        .alert-danger {
-            background-color: #ffebee;
-            border-color: #c62828;
-            color: #2e7d32 ;
-        }
-
-        .alert-success {
-            background-color: #e8f5e9;
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .text-center {
-            margin-top: 20px;
-        }
-
-        .text-center p {
-            color: var(--text-color);
-            margin-bottom: 10px;
-        }
-
-        .text-center a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s ease;
-        }
-
-        .text-center a:hover {
-            color: #1b5e20;
-            text-decoration: underline;
-        }
-
-        .back-link {
-            color: var(--text-color) !important;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
-        .back-link i {
-            margin-right: 0.5rem;
-        }
+        .text-center { margin-top: 20px; }
+        .text-center a { color: var(--primary-color); text-decoration: none; font-weight: bold; }
+        .text-center a:hover { color: #1b5e20; text-decoration: underline; }
+        .back-link { color: var(--text-color) !important; display: inline-block; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <div class="login text-success  margin-bottom: 10px;
-            display: block;">
-            <!-- <i class="fas fa-sign-in-alt"></i> -->
+        <div class="login-header">
             <h2>Sign into your account</h2>
-            
         </div>
         
-        <?php echo $message; ?>
+        <?php if (!empty($message)) echo $message; ?>
         
         <form method="POST" action="">
             <div class="mb-3">
-                <label for="username" class="form-label"><i class="fas fa-user"></i> Username or Email</label>
-                <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username or email" required>
+                <label for="email" class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
             </div>
             
             <div class="mb-3">
@@ -225,13 +149,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
             </div>
             
-            <button type="submit" class="btn btn-login">
-                <i class="fas fa-sign-in-alt"></i> Sign In
+            <button type="submit" name="login" class="btn btn-login">
+                <i class="fas fa-sign-in-alt"></i> SignIn
             </button>
         </form>
         
         <div class="text-center">
-            <p>Don't have an account? <a href="register.php">Sign up here</a></p>
+            <p>Don't have an account? <a href="signup.php">Sign up here</a></p>
             <a href="index.php" class="back-link"><i class="fas fa-home"></i> Back to Home</a>
         </div>
     </div>
