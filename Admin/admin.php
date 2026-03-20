@@ -18,6 +18,35 @@ if ($table_check && mysqli_num_rows($table_check) > 0) {
     }
 }
 $photo_count = count($photos);
+
+$pending_order_count = 0;
+$orders_table_check = mysqli_query($conn, "SHOW TABLES LIKE 'orders'");
+if ($orders_table_check && mysqli_num_rows($orders_table_check) > 0) {
+    $pending_result = mysqli_query(
+        $conn,
+        "SELECT COUNT(*) AS total FROM orders WHERE LOWER(COALESCE(status, 'pending')) IN ('pending', 'new')"
+    );
+    if ($pending_result) {
+        $pending_row = mysqli_fetch_assoc($pending_result);
+        $pending_order_count = (int) ($pending_row['total'] ?? 0);
+    }
+}
+
+$new_message_count = 0;
+$messages_table_check = mysqli_query($conn, "SHOW TABLES LIKE 'messages'");
+if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
+    $is_read_column = mysqli_query($conn, "SHOW COLUMNS FROM messages LIKE 'is_read'");
+    if ($is_read_column && mysqli_num_rows($is_read_column) > 0) {
+        $message_count_result = mysqli_query($conn, "SELECT COUNT(*) AS total FROM messages WHERE is_read = 0");
+    } else {
+        $message_count_result = mysqli_query($conn, "SELECT COUNT(*) AS total FROM messages");
+    }
+
+    if (!empty($message_count_result)) {
+        $message_row = mysqli_fetch_assoc($message_count_result);
+        $new_message_count = (int) ($message_row['total'] ?? 0);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -56,6 +85,16 @@ $photo_count = count($photos);
         transition: transform 0.2s;
     }
     .stat-card:hover { transform: translateY(-3px); }
+    .stat-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    .stat-link:focus-visible {
+        outline: 2px solid #1f6b3f;
+        outline-offset: 2px;
+        border-radius: 12px;
+    }
     .photo-card {
         border: none;
         border-radius: 12px;
@@ -109,7 +148,6 @@ $photo_count = count($photos);
         <nav class="nav flex-column">
             <a class="nav-link active" href="admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
             <a class="nav-link" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Upload Photo</a>
-             <a class="nav-link" href="order_detail.php"><i class="bi bi-cart3"></i> customer details</a>
             <a class="nav-link" href="view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
             <a class="nav-link" href="view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
             <a class="nav-link mt-auto text-danger" href="adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
@@ -146,30 +184,30 @@ $photo_count = count($photos);
                     </div>
                 </div>
                 <div class="col-sm-6 col-lg-4">
-                    <div class="card stat-card shadow-sm">
+                    <a href="view_orders.php" class="card stat-card shadow-sm stat-link" aria-label="Open orders page">
                         <div class="card-body d-flex align-items-center">
                             <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
                                 <i class="bi bi-cart3 text-primary fs-4"></i>
                             </div>
                             <div>
-                                <h3 class="mb-0">0</h3>
-                                <small class="text-muted">Pending Orders</small>
+                                <h3 class="mb-0"><?php echo $pending_order_count; ?></h3>
+                                <small class="text-muted">New Orders</small>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
                 <div class="col-sm-6 col-lg-4">
-                    <div class="card stat-card shadow-sm">
+                    <a href="view_messages.php" class="card stat-card shadow-sm stat-link" aria-label="Open messages page">
                         <div class="card-body d-flex align-items-center">
                             <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
                                 <i class="bi bi-envelope text-warning fs-4"></i>
                             </div>
                             <div>
-                                <h3 class="mb-0">0</h3>
+                                <h3 class="mb-0"><?php echo $new_message_count; ?></h3>
                                 <small class="text-muted">New Messages</small>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
 

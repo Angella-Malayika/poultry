@@ -26,16 +26,24 @@
             <div class="carousel-item active">
                 <img src="images/Poultry-farm-2.jpg" class="d-block w-100" alt="...">
                 <div class="carousel-caption d-flex flex-column justify-content-center h-100 color-#333">
-                    <h1>WELCOME TO KALUNGU QUALITY POULTRY FEEDS</h1>
+                    <h1>WELCOME TO KALUNGU QUALITY POULTRY FEEDS.</h1>
                    
                 </div>
             </div>
             <div class="carousel-item">
                 <img src="images/hen-laying-eggs.jpg" class="d-block w-100" alt="...">
+                <div class="carousel-caption d-flex flex-column justify-content-center h-100 color-#333">
+                    <h1>CONSISTENT QUALITY, STRAIGHT FROM OUR FARM.</h1>
+                   
+                </div>
                
             </div>
             <div class="carousel-item">
                 <img src="images/day one chick.jpg" class="d-block w " alt="...">
+                <div class="carousel-caption d-flex flex-column justify-content-center h-100 color-#333">
+                    <h1> STRONG CHICKS TODAY, RELIABLE POULTRY TOMORROW.</h1>
+                   
+                </div>
                
             </div>
         </div>

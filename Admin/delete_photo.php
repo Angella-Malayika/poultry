@@ -100,7 +100,7 @@ if (isset($_POST['confirm_delete'])) {
 
     <div class="col-md-3 col-lg-2 sidebar d-none d-md-block">
         <div class="brand">
-            <h4><i class="bi bi-egg-fried"></i> Poultry Farm</h4>
+            <h4><i class="bi bi-egg-fried"></i> Kalungu Quality Feeds</h4>
             <small>Admin Panel</small>
         </div>
         <nav class="nav flex-column">

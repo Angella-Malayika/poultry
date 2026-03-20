@@ -18,31 +18,6 @@ $upload_sections = [
     'day-old-chicks' => 'One-Day-Old Chicks',
 ];
 $selected_section = 'broilers';
-$detail_products = [];
-$selected_detail_product = '';
-
-function default_detail_slug_for_section($section, $detail_products)
-{
-    $preferred = [
-        'broilers' => ['broiler', 'chicks-broiler', 'broiler-pellet', 'broiler-concentrate'],
-        'layers' => ['layer', 'chicks-layer', 'layer-pellet', 'layer-concentrate'],
-        'animal-feeds' => ['pig', 'cattle', 'goat'],
-        'day-old-chicks' => ['chicks', 'chicks-broiler', 'chicks-layer', 'kenbro-day-old'],
-    ];
-
-    $candidates = $preferred[$section] ?? [];
-    foreach ($candidates as $slug) {
-        if (isset($detail_products[$slug])) {
-            return $slug;
-        }
-    }
-
-    foreach ($detail_products as $slug => $_item) {
-        return $slug;
-    }
-
-    return '';
-}
 
 function ensure_photo_schema($conn, &$columns)
 {
@@ -87,13 +62,6 @@ function ensure_photo_schema($conn, &$columns)
         $columns[] = 'product_section';
     }
 
-    if (!in_array('product_slug', $columns, true)) {
-        if (!mysqli_query($conn, "ALTER TABLE photos ADD COLUMN product_slug VARCHAR(80) NULL")) {
-            return 'Unable to add product_slug column in photos table.';
-        }
-        $columns[] = 'product_slug';
-    }
-
     return '';
 }
 
@@ -103,55 +71,10 @@ if ($schema_error !== '') {
     $message_type = 'danger';
 }
 
-$products_table = mysqli_query($conn, "SHOW TABLES LIKE 'products'");
-$categories_table = mysqli_query($conn, "SHOW TABLES LIKE 'categories'");
-if ($products_table && $categories_table && mysqli_num_rows($products_table) > 0 && mysqli_num_rows($categories_table) > 0) {
-    $products_result = mysqli_query(
-        $conn,
-        "SELECT p.slug, p.name, c.title AS category_title
-         FROM products p
-         JOIN categories c ON p.category_id = c.id
-         WHERE p.is_active = 1
-         ORDER BY c.sort_order ASC, p.sort_order ASC, p.name ASC"
-    );
-
-    if ($products_result) {
-        while ($product_row = mysqli_fetch_assoc($products_result)) {
-            $slug = trim((string) ($product_row['slug'] ?? ''));
-            if ($slug === '') {
-                continue;
-            }
-
-            $detail_products[$slug] = [
-                'name' => (string) ($product_row['name'] ?? $slug),
-                'category' => (string) ($product_row['category_title'] ?? ''),
-            ];
-        }
-    }
-}
-
-if (count($detail_products) === 0) {
-    $detail_products = [
-        'broiler' => ['name' => 'Broiler Feed', 'category' => 'Broilers'],
-        'layer' => ['name' => 'Layer Mash', 'category' => 'Layers'],
-        'pig' => ['name' => 'Pig Feed', 'category' => 'Animal Feeds'],
-        'chicks' => ['name' => 'One-Day-Old Chicks', 'category' => 'Day-Old Chicks'],
-    ];
-}
-
-$selected_detail_product = default_detail_slug_for_section($selected_section, $detail_products);
-
 if (isset($_POST['upload'])) {
     $posted_section = isset($_POST['product_section']) ? trim((string) $_POST['product_section']) : '';
     if (array_key_exists($posted_section, $upload_sections)) {
         $selected_section = $posted_section;
-    }
-
-    $posted_detail_product = isset($_POST['detail_product']) ? trim((string) $_POST['detail_product']) : '';
-    if (isset($detail_products[$posted_detail_product])) {
-        $selected_detail_product = $posted_detail_product;
-    } else {
-        $selected_detail_product = default_detail_slug_for_section($selected_section, $detail_products);
     }
 
     if ($schema_error !== '') {
@@ -159,9 +82,6 @@ if (isset($_POST['upload'])) {
         $message_type = 'danger';
     } elseif (!array_key_exists($selected_section, $upload_sections)) {
         $message = 'Please choose where this image should be added.';
-        $message_type = 'danger';
-    } elseif ($selected_detail_product === '' || !isset($detail_products[$selected_detail_product])) {
-        $message = 'Please choose the product details page for this image.';
         $message_type = 'danger';
     } elseif (!isset($_FILES['image']) || !is_uploaded_file($_FILES['image']['tmp_name'])) {
         $message = 'Please choose a valid image file.';
@@ -205,13 +125,13 @@ if (isset($_POST['upload'])) {
                 $extension = $mime_map[$file_type] ?? 'jpg';
                 $stored_name = $safe_base . '_' . time() . '.' . $extension;
 
-                $stmt = $conn->prepare("INSERT INTO photos (image, image_data, image_mime, product_section, product_slug) VALUES (?, ?, ?, ?, ?)");
+                $stmt = $conn->prepare("INSERT INTO photos (image, image_data, image_mime, product_section) VALUES (?, ?, ?, ?)");
                 if (!$stmt) {
                     $message = 'Database insert failed.';
                     $message_type = 'danger';
                 } else {
                     $blob_param = null;
-                    $stmt->bind_param("sbsss", $stored_name, $blob_param, $file_type, $selected_section, $selected_detail_product);
+                    $stmt->bind_param("sbss", $stored_name, $blob_param, $file_type, $selected_section);
                     $stmt->send_long_data(1, $image_data);
 
                     if ($stmt->execute()) {
@@ -232,9 +152,6 @@ if ($schema_error === '') {
     $recent_sql = "SELECT id, image";
     if (in_array('product_section', $photo_columns, true)) {
         $recent_sql .= ", product_section";
-    }
-    if (in_array('product_slug', $photo_columns, true)) {
-        $recent_sql .= ", product_slug";
     }
     if (in_array('created_at', $photo_columns, true)) {
         $recent_sql .= ", created_at";
@@ -505,22 +422,6 @@ if ($schema_error === '') {
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-
-                                <div class="mb-3">
-                                    <label for="detail_product" class="form-label fw-semibold">View Details Button Should Open</label>
-                                    <select id="detail_product" name="detail_product" class="form-select" required>
-                                        <option value="">Select product details page</option>
-                                        <?php foreach ($detail_products as $slug => $detail): ?>
-                                            <option value="<?php echo htmlspecialchars($slug); ?>" <?php echo $selected_detail_product === $slug ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($detail['name']); ?>
-                                                <?php if (!empty($detail['category'])): ?>
-                                                    (<?php echo htmlspecialchars($detail['category']); ?>)
-                                                <?php endif; ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-
                                 <div class="drop-hint mb-3">
                                     <label for="image" class="form-label fw-semibold">Choose Image</label>
                                     <input id="image" type="file" name="image" class="form-control" accept="image/*" required>
@@ -563,12 +464,6 @@ if ($schema_error === '') {
                                                 if ($recent_section_key !== '' && isset($upload_sections[$recent_section_key])):
                                                 ?>
                                                     <br><span class="fw-semibold"><?php echo htmlspecialchars($upload_sections[$recent_section_key]); ?></span>
-                                                <?php endif; ?>
-                                                <?php
-                                                $recent_slug = (string) ($photo['product_slug'] ?? '');
-                                                if ($recent_slug !== '' && isset($detail_products[$recent_slug])):
-                                                ?>
-                                                    <br><small>Details: <?php echo htmlspecialchars($detail_products[$recent_slug]['name']); ?></small>
                                                 <?php endif; ?>
                                                 <?php if (!empty($photo['created_at'])): ?>
                                                     <br><?php echo htmlspecialchars((string) $photo['created_at']); ?>

@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS orders (
     full_name VARCHAR(100) NOT NULL,
     phone VARCHAR(20) NOT NULL,
     product VARCHAR(50) NOT NULL,
-    quantity INT(11) NOT NULL,
+    quantity DECIMAL(10,2) NOT NULL,
     delivery_address TEXT NOT NULL,
     delivery_date DATE NOT NULL,
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -36,7 +36,9 @@ CREATE TABLE IF NOT EXISTS messages (
     phone VARCHAR(20) DEFAULT NULL,
     subject VARCHAR(100) NOT NULL,
     message_text TEXT NOT NULL,
-    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    read_at DATETIME DEFAULT NULL
 );
 
 -- Photos table is created dynamically by upload_photo.php via ensure_photo_schema()
