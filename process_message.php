@@ -1,8 +1,11 @@
 <?php
-session_start();
+require_once 'auth_required.php';
 
 // Load email configuration
 $emailConfig = require_once 'email_config.php';
+
+// Include database connection
+include("connection.php");
 
 // Get form data and sanitize
 $name = htmlspecialchars(trim($_POST['name'] ?? ''));
@@ -86,6 +89,12 @@ function sendSMTPEmail($config, $name, $email, $phone, $subject, $message) {
 
 // Try to send email
 try {
+    // Save message to database
+    $stmt = $conn->prepare("INSERT INTO messages (sender_name, email, phone, subject, message_text) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssss", $name, $email, $phone, $subject, $message);
+    $stmt->execute();
+    $stmt->close();
+
     if (sendSMTPEmail($emailConfig, $name, $email, $phone, $subject, $message)) {
         $_SESSION['success'] = "Thank you for contacting us! Your message has been sent successfully. We'll get back to you soon.";
     } else {

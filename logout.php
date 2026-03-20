@@ -1,4 +1,5 @@
 <?php
+include("connection.php");
 session_start();
 
 // Unset all session variables
@@ -165,14 +166,14 @@ session_destroy();
             <i class="fas fa-check-circle"></i>
         </div>
         
-        <h1>You've Been Logged Out</h1>
-        <p>Thank you for using Kalungu Quality Feeds</p>
+        <h1>Logged Out successfully</h1>
         
         <div class="logout-message">
-            <p><i class="fas fa-info-circle me-2"></i>Your session has been securely terminated. Your account is safe.</p>
+            <p><i class="fas fa-info-circle me-2"></i>Thank you for using Kalungu Quality Feeds</p>
+.</p>
         </div>
 
-        <p>We hope to see you soon! Feel free to browse our products or sign back in.</p>
+        <p>We hope to see you soon!.</p>
 
         <div class="btn-group-logout">
             <a href="index.php" class="btn-home">

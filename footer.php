@@ -58,7 +58,7 @@
     </div>
 
     <div class="small">
-      <p>&copy; 2026 Kalungu Quality Feeds. All rights reserved.</p>
+      <p>&copy; <?php echo date('Y'); ?> Kalungu Quality Feeds. All rights reserved.</p>
     </div>
   </div>
 </footer>

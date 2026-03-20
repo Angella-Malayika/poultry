@@ -1,9 +1,5 @@
-<?php
-include_once("./dbcon/connection.php");
-?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,6 +12,8 @@ include_once("./dbcon/connection.php");
 
 <body>
    <?php include 'header.php'; ?>
+       
+
         
     </nav>
     <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel" style="margin-top: 40px;">
@@ -26,18 +24,18 @@ include_once("./dbcon/connection.php");
         </div>
         <div class="carousel-inner">
             <div class="carousel-item active">
-                <img src="./images/Poultry-farm-2.jpg" class="d-block " alt="...">
+                <img src="images/Poultry-farm-2.jpg" class="d-block w-100" alt="...">
                 <div class="carousel-caption d-flex flex-column justify-content-center h-100 color-#333">
                     <h1>WELCOME TO KALUNGU QUALITY POULTRY FEEDS</h1>
                    
                 </div>
             </div>
             <div class="carousel-item">
-                <img src="./images/hen-laying-eggs.jpg" class="d-block " alt="...">
+                <img src="images/hen-laying-eggs.jpg" class="d-block w-100" alt="...">
                
             </div>
             <div class="carousel-item">
-                <img src="./images/day one chick.jpg" class="d-block w " alt="...">
+                <img src="images/day one chick.jpg" class="d-block w " alt="...">
                
             </div>
         </div>
@@ -56,15 +54,15 @@ include_once("./dbcon/connection.php");
         <div class="dealers-list">
             <a class="dealer-item" href="product-category.php?category=broilers">Broiler Chicks</a>
             <a class="dealer-item" href="product-category.php?category=layers">Layer Chicks</a>
-            <a class="dealer-item" href="product-category.php?category=feeds">Kenbro Chicks </a>
-            <a class="dealer-item" href="product-category.php?category=feeds">Pallet</a>
-             <a class="dealer-item" href="product-category.php?category=feeds">Feed Additives</a>
-             <a class="dealer-item" href="product-category.php?category=feeds">Feed Concentrates</a>
+            <a class="dealer-item" href="product-category.php?category=kenbro-chicks">Kenbro Chicks</a>
+            <a class="dealer-item" href="product-category.php?category=pellets">Pellet</a>
+            <a class="dealer-item" href="product-category.php?category=feed-additives">Feed Additives</a>
+            <a class="dealer-item" href="product-category.php?category=feed-concentrates">Feed Concentrates</a>
             <a class="dealer-item" href="product-category.php?category=chicks">Day Old Chicks</a>
             <a class="dealer-item" href="product-category.php?category=consultancy">Consultancy</a>
         </div>
     </section>
-     <?php include 'footer.php'; ?>
+    <?php include 'footer.php'; ?>
 
   
  

@@ -1,5 +1,5 @@
 <?php
-include './dbcon/connection.php';
+include("connection.php");
 session_start();
 
 $message = ''; // Initialize message variable to prevent undefined warnings
@@ -11,29 +11,68 @@ if (isset($_POST['login'])) {
     if (empty($email) || empty($password)) {
         $message = '<div class="alert alert-danger">Please fill in all fields.</div>';
     } else {
-        // Prepare the SQL statement to find the user
-        $stmt = $conn->prepare("SELECT email, password FROM users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        // Check if user exists
-        if ($result->num_rows === 1) {
-            $row = $result->fetch_assoc();
-
-            // Verify the password against the hashed version in DB
-            if (password_verify($password, $row['password'])) {
-                // Success! Set session and redirect
-                $_SESSION['email'] = $row['email'];
-                header("Location: index.php");
-                exit();
-            } else {
-                $message = '<div class="alert alert-danger">Invalid email or password.</div>';
+        // Detect actual column names to avoid "Unknown column" errors across deployments.
+        $cols = [];
+        $col_res = $conn->query("SHOW COLUMNS FROM users");
+        if ($col_res) {
+            while ($c = $col_res->fetch_assoc()) {
+                $cols[] = $c['Field'];
             }
-        } else {
-            $message = '<div class="alert alert-danger">Invalid email or password.</div>';
         }
-        $stmt->close();
+
+        $id_col       = in_array('id', $cols)              ? 'id'              : (in_array('user_id', $cols)  ? 'user_id'  : null);
+        $pass_col     = in_array('password', $cols)        ? 'password'        : (in_array('password_hashed', $cols) ? 'password_hashed' : null);
+        $has_username = in_array('username', $cols);
+        $has_role     = in_array('role', $cols);
+
+        if ($id_col === null || $pass_col === null || !$has_username) {
+            $message = '<div class="alert alert-danger">Database configuration error. Please contact the administrator.</div>';
+        } else {
+            $sel = "`{$id_col}` AS id, username, email, `{$pass_col}` AS pwd";
+            if ($has_role) {
+                $sel .= ", role";
+            }
+
+            $stmt = $conn->prepare("SELECT {$sel} FROM users WHERE email = ? LIMIT 1");
+            if (!$stmt) {
+                $message = '<div class="alert alert-danger">Something went wrong. Please try again later.</div>';
+            } else {
+                $stmt->bind_param("s", $email);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                if ($result && $result->num_rows === 1) {
+                    $row = $result->fetch_assoc();
+                    $stored = $row['pwd'] ?? '';
+
+                    // Verify password (hashed or legacy plain-text fallback).
+                    $ok = $stored !== '' && (
+                        password_verify($password, $stored) || hash_equals($stored, $password)
+                    );
+
+                    if ($ok) {
+                        session_regenerate_id(true);
+                        $_SESSION['logged_in'] = true;
+                        $_SESSION['user_id']   = (int) $row['id'];
+                        $_SESSION['username']  = $row['username'];
+                        $_SESSION['email']     = $row['email'];
+                        $_SESSION['role']      = $has_role ? ($row['role'] ?? 'user') : 'user';
+
+                        if ($_SESSION['role'] === 'admin') {
+                            header("Location: website/admin.php");
+                        } else {
+                            header("Location: index.php");
+                        }
+                        exit();
+                    } else {
+                        $message = '<div class="alert alert-danger">Invalid email or password.</div>';
+                    }
+                } else {
+                    $message = '<div class="alert alert-danger">Invalid email or password.</div>';
+                }
+                $stmt->close();
+            }
+        }
     }
 }
 ?>

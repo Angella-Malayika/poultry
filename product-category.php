@@ -1,172 +1,33 @@
 <?php
-// Category data with products
-$categories = [
-    'broilers' => [
-        'title' => 'Broiler Products',
-        'description' => 'Complete solutions for broiler chicken farming',
-        'icon' => 'fas fa-egg',
-        'products' => [
-            'broiler' => [
-                'name' => 'Broiler Feed',
-                'image' => './images/broiler.jpeg',
-                'description' => 'High-energy feed designed for rapid weight gain in meat-type chickens.',
-                // 'price' => 'UGX 105,000 per 50kg bag',
-                'link' => 'product-details.php?product=broiler'
-            ],
-            'chicks' => [
-                'name' => 'Broiler Day-Old Chicks',
-                'image' => './images/images.jpeg',
-                'description' => 'Healthy, vaccinated broiler chicks ready for farming.',
-                // 'price' => 'UGX 2,500 per chick',
-                'link' => 'product-details.php?product=chicks'
-            ]
-        ]
-    ],
-    'layers' => [
-        'title' => 'Layer Products',
-        'description' => 'Everything you need for egg production',
-        'icon' => 'fas fa-dna',
-        'products' => [
-            'layer' => [
-                'name' => 'Layer Mash',
-                'image' => './images/layer.jpeg',
-                'description' => 'Premium quality feed specially formulated for laying hens to maximize egg production.',
-                // 'price' => 'UGX 100,000 per 50kg bag',
-                'link' => 'product-details.php?product=layer'
-            ],
-            'lime' => [
-                'name' => 'Lime (Calcium Supplement)',
-                'image' => './images/lime.jpeg',
-                'description' => 'Essential calcium for strong eggshells and bone development.',
-                // 'price' => 'UGX 35,000 per 50kg bag',
-                'link' => 'product-details.php?product=lime'
-            ]
-        ]
-    ],
-    'feeds' => [
-        'title' => 'All Feed Products',
-        'description' => 'Complete range of nutritional feeds for all livestock',
-        'icon' => 'fas fa-bags-shopping',
-        'products' => [
-            'broiler' => [
-                'name' => 'Broiler Feed',
-                'image' => './images/broiler.jpeg',
-                'description' => 'High-energy feed for rapid weight gain.',
-                // 'price' => 'UGX 105,000 per 50kg bag',
-                'link' => 'product-details.php?product=broiler'
-            ],
-            'grower' => [
-                'name' => 'Grower Mash',
-                'image' => './images/soya.jpeg',
-                'description' => 'Complete feed for growing chickens from 8 weeks to point of lay.',
-                // 'price' => 'UGX 95,000 per 50kg bag',
-                'link' => 'product-details.php?product=grower'
-            ],
-            'layer' => [
-                'name' => 'Layer Mash',
-                'image' => './images/layer.jpeg',
-                'description' => 'Premium feed for laying hens to maximize egg production.',
-                // 'price' => 'UGX 100,000 per 50kg bag',
-                'link' => 'product-details.php?product=layer'
-            ],
-            'soya' => [
-                'name' => 'Soya',
-                'image' => './images/soya b.jpeg',
-                'description' => 'High-quality soya bean meal for protein supplementation.',
-                // 'price' => 'UGX 85,000 per 50kg bag',
-                'link' => 'product-details.php?product=soya'
-            ],
-            'sunflower' => [
-                'name' => 'Sunflower',
-                'image' => './images/sun.jpeg',
-                'description' => 'Excellent protein and energy source for livestock.',
-                'price' => 'UGX 70,000 per 50kg bag',
-                'link' => 'product-details.php?product=sunflower'
-            ],
-            'pig' => [
-                'name' => 'Pig Feed',
-                'image' => './images/pig.jpeg',
-                'description' => 'Complete nutrition for all stages of pig production.',
-                'price' => 'UGX 98,000 per 50kg bag',
-                'link' => 'product-details.php?product=pig'
-            ],
-            'cattle' => [
-                'name' => 'Dairy & Beef Cattle Feed',
-                'image' => './images/catle.jpeg',
-                'description' => 'High-quality feed for milk production and beef growth.',
-                'price' => 'UGX 130,000 per 70kg bag',
-                'link' => 'product-details.php?product=cattle'
-            ],
-            'goat' => [
-                'name' => 'Goat Feed',
-                'image' => './images/goat-feed-performance-40kg.jpg',
-                'description' => 'Specially formulated for goats at all production stages.',
-                'price' => 'UGX 80,000 per 40kg bag',
-                'link' => 'product-details.php?product=goat'
-            ]
-        ]
-    ],
-    'chicks' => [
-        'title' => 'Day-Old Chicks',
-        'description' => 'Healthy, vaccinated chicks for poultry farming',
-        'icon' => 'fas fa-heart',
-        'products' => [
-            'chicks-broiler' => [
-                'name' => 'Broiler Day-Old Chicks',
-                'image' => './images/images.jpeg',
-                'description' => 'Fast-growing broiler chicks, vaccinated against Marek\'s disease.',
-                'price' => 'UGX 2,500 per chick',
-                'link' => 'product-details.php?product=chicks'
-            ],
-            'chicks-layer' => [
-                'name' => 'Layer Day-Old Chicks',
-                'image' => './images/images.jpeg',
-                'description' => 'Quality layer chicks with excellent laying potential.',
-                'price' => 'UGX 3,000 per chick',
-                'link' => 'product-details.php?product=chicks'
-            ]
-        ]
-    ],
-    'consultancy' => [
-        'title' => 'Expert Consultancy Services',
-        'description' => 'Professional agricultural guidance for successful farming',
-        'icon' => 'fas fa-users',
-        'products' => [
-            'farm-setup' => [
-                'name' => 'Farm Setup & Planning',
-                'image' => './images/farm-supervisor.jpg',
-                'description' => 'Personalized consultation for setting up your poultry or livestock farm.',
-                'price' => 'Contact for quote',
-                'link' => 'contact.php'
-            ],
-            'nutrition' => [
-                'name' => 'Nutrition & Feed Planning',
-                'image' => './images/layer.jpeg',
-                'description' => 'Expert guidance on optimal feed formulation for your livestock.',
-                'price' => 'Contact for quote',
-                'link' => 'contact.php'
-            ],
-            'health' => [
-                'name' => 'Animal Health Management',
-                'image' => './images/broiler.jpeg',
-                'description' => 'Disease prevention, vaccination schedules, and health protocols.',
-                'price' => 'Contact for quote',
-                'link' => 'contact.php'
-            ],
-            'training' => [
-                'name' => 'Farmer Training Programs',
-                'image' => './images/farm-training.jpg',
-                'description' => 'Monthly workshops on modern farming techniques and best practices.',
-                'price' => 'Free for customers',
-                'link' => 'contact.php'
-            ]
-        ]
-    ]
-];
+require_once 'auth_required.php';
+include("connection.php");
 
 // Get category from URL
-$category = isset($_GET['category']) ? $_GET['category'] : 'feeds';
-$category_data = isset($categories[$category]) ? $categories[$category] : $categories['feeds'];
+$category_slug = isset($_GET['category']) ? mysqli_real_escape_string($conn, $_GET['category']) : 'feeds';
+
+// Fetch category data from database
+$cat_sql = "SELECT * FROM categories WHERE slug = '$category_slug' AND is_active = 1";
+$cat_result = mysqli_query($conn, $cat_sql);
+
+// If category not found, default to 'feeds'
+if (!$cat_result || mysqli_num_rows($cat_result) == 0) {
+    $category_slug = 'feeds';
+    $cat_sql = "SELECT * FROM categories WHERE slug = '$category_slug' AND is_active = 1";
+    $cat_result = mysqli_query($conn, $cat_sql);
+}
+
+$category_data = mysqli_fetch_assoc($cat_result);
+
+// Fetch products for this category
+$products_sql = "SELECT * FROM products WHERE category_id = '{$category_data['id']}' AND is_active = 1 ORDER BY sort_order ASC";
+$products_result = mysqli_query($conn, $products_sql);
+
+$products = [];
+if ($products_result) {
+    while ($product = mysqli_fetch_assoc($products_result)) {
+        $products[] = $product;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -279,14 +140,14 @@ $category_data = isset($categories[$category]) ? $categories[$category] : $categ
 
             <!-- Products Grid -->
             <div class="row g-4">
-                <?php foreach ($category_data['products'] as $key => $product): ?>
+                <?php foreach ($products as $product): ?>
                     <div class="col-md-6 col-lg-4">
                         <div class="card product-card">
-                            <img src="<?php echo $product['image']; ?>" class="card-img-top" alt="<?php echo $product['name']; ?>">
+                            <img src="<?php echo htmlspecialchars($product['image']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($product['name']); ?>">
                             <div class="card-body d-flex flex-column">
-                                <h5 class="card-title"><?php echo $product['name']; ?></h5>
-                                <p class="card-text text-muted small flex-grow-1"><?php echo $product['description']; ?></p>
-                                <a href="<?php echo $product['link']; ?>" class="btn btn-view btn-sm">
+                                <h5 class="card-title"><?php echo htmlspecialchars($product['name']); ?></h5>
+                                <p class="card-text text-muted small flex-grow-1"><?php echo htmlspecialchars($product['description']); ?></p>
+                                <a href="product-details.php?product=<?php echo htmlspecialchars($product['slug']); ?>" class="btn btn-view btn-sm">
                                     <i class="fas fa-eye me-2"></i>View Details
                                 </a>
                             </div>

@@ -1,5 +1,6 @@
 <?php
-include './dbcon/connection.php';
+
+include './connection.php';
 session_start();
 
 $message = ''; // Initialize message variable
@@ -11,35 +12,72 @@ if (isset($_POST['signup'])) {
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
 
-    // Check if passwords match
-    if ($password !== $confirm_password) {
+    if (empty($username) || empty($email) || empty($password) || empty($confirm_password)) {
+        $message = '<div class="alert alert-danger">Please fill in all fields.</div>';
+    } elseif ($password !== $confirm_password) {
         $message = '<div class="alert alert-danger">Passwords do not match!</div>';
     } else {
-        // Use prepared statements to check if email OR username already exists
-        $checkStmt = $conn->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
-        $checkStmt->bind_param("ss", $email, $username);
-        $checkStmt->execute();
-        $result = $checkStmt->get_result();
-
-        if ($result->num_rows > 0) {
-            $message = '<div class="alert alert-danger">Email or Username already exists!</div>';
-        } else {
-            // Hash the password securely
-            $hashedpassword = password_hash($password, PASSWORD_DEFAULT);
-            
-            // Insert new user using prepared statements
-            $insertStmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-            $insertStmt->bind_param("sss", $username, $email, $hashedpassword);
-            
-            if ($insertStmt->execute()) {
-                // Registration successful
-                $message = '<div class="alert alert-success">Account created successfully! <a href="login.php">Login here</a></div>';
-            } else {
-                $message = '<div class="alert alert-danger">Error: Something went wrong.</div>';
+        // Detect actual user table columns to support both password/password_hashed schemas.
+        $cols = [];
+        $col_res = $conn->query("SHOW COLUMNS FROM users");
+        if ($col_res) {
+            while ($c = $col_res->fetch_assoc()) {
+                $cols[] = $c['Field'];
             }
-            $insertStmt->close();
         }
-        $checkStmt->close();
+
+        $pass_col = in_array('password', $cols, true)
+            ? 'password'
+            : (in_array('password_hashed', $cols, true) ? 'password_hashed' : null);
+
+        $has_username = in_array('username', $cols, true);
+        $has_email = in_array('email', $cols, true);
+        $has_role = in_array('role', $cols, true);
+
+        if ($pass_col === null || !$has_username || !$has_email) {
+            $message = '<div class="alert alert-danger">Database configuration error. Please contact the administrator.</div>';
+        } else {
+            // Use prepared statements to check if email OR username already exists
+            $checkStmt = $conn->prepare("SELECT 1 FROM users WHERE email = ? OR username = ? LIMIT 1");
+            if (!$checkStmt) {
+                $message = '<div class="alert alert-danger">Something went wrong. Please try again later.</div>';
+            } else {
+                $checkStmt->bind_param("ss", $email, $username);
+                $checkStmt->execute();
+                $result = $checkStmt->get_result();
+
+                if ($result && $result->num_rows > 0) {
+                    $message = '<div class="alert alert-danger">Email or Username already exists!</div>';
+                } else {
+                    // Hash the password securely
+                    $hashedpassword = password_hash($password, PASSWORD_DEFAULT);
+
+                    $insert_sql = "INSERT INTO users (username, email, `{$pass_col}`";
+                    $insert_sql .= $has_role ? ", role) VALUES (?, ?, ?, ?)" : ") VALUES (?, ?, ?)";
+                    $insertStmt = $conn->prepare($insert_sql);
+
+                    if (!$insertStmt) {
+                        $message = '<div class="alert alert-danger">Error: Something went wrong.</div>';
+                    } else {
+                        if ($has_role) {
+                            $defaultRole = 'user';
+                            $insertStmt->bind_param("ssss", $username, $email, $hashedpassword, $defaultRole);
+                        } else {
+                            $insertStmt->bind_param("sss", $username, $email, $hashedpassword);
+                        }
+
+                        if ($insertStmt->execute()) {
+                            // Registration successful
+                            $message = '<div class="alert alert-success">Account created successfully! <a href="login.php">Login here</a></div>';
+                        } else {
+                            $message = '<div class="alert alert-danger">Error: Something went wrong.</div>';
+                        }
+                        $insertStmt->close();
+                    }
+                }
+                $checkStmt->close();
+            }
+        }
     }
 }
 ?>

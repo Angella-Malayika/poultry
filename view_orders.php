@@ -2,16 +2,17 @@
 session_start();
 
 // Check if user is logged in and is an admin
-if (!isset($_SESSION['logged_in']) || $_SESSION['role'] != 'admin') {
+if (!isset($_SESSION['logged_in']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header('Location: login.php');
     exit();
 }
 
 // Include database connection
-include './dbcon/connection.php';
-
-// Fetch all orders
-$sql = "SELECT * FROM orders ORDER BY order_date DESC";
+include("connection.php");
+// Fetch all orders with customer email
+$sql = "SELECT o.*, u.email FROM orders o
+        JOIN users u ON o.user_id = u.user_id
+        ORDER BY o.order_date DESC";
 $result = mysqli_query($conn, $sql);
 ?>
 <!DOCTYPE html>
@@ -51,8 +52,9 @@ $result = mysqli_query($conn, $sql);
                 <table class="table table-striped table-hover">
                     <thead class="table-dark">
                         <tr>
-                            <th>ID</th>
+                            <th>Order ID</th>
                             <th>Customer Name</th>
+                            <th>Email</th>
                             <th>Phone</th>
                             <th>Product</th>
                             <th>Quantity</th>
@@ -60,14 +62,16 @@ $result = mysqli_query($conn, $sql);
                             <th>Delivery Date</th>
                             <th>Order Date</th>
                             <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php while ($row = mysqli_fetch_assoc($result)): ?>
                             <tr>
-                                <td><?php echo $row['id']; ?></td>
+                                <td><strong>#<?php echo $row['id']; ?></strong></td>
                                 <td><?php echo htmlspecialchars($row['full_name']); ?></td>
-                                <td><?php echo htmlspecialchars($row['phone']); ?></td>
+                                <td><a href="mailto:<?php echo htmlspecialchars($row['email']); ?>"><?php echo htmlspecialchars($row['email']); ?></a></td>
+                                <td><a href="tel:<?php echo htmlspecialchars($row['phone']); ?>"><?php echo htmlspecialchars($row['phone']); ?></a></td>
                                 <td><span class="badge bg-info"><?php echo htmlspecialchars($row['product']); ?></span></td>
                                 <td><?php echo $row['quantity']; ?></td>
                                 <td><?php echo htmlspecialchars($row['delivery_address']); ?></td>
@@ -81,6 +85,11 @@ $result = mysqli_query($conn, $sql);
                                     <?php else: ?>
                                         <span class="badge bg-secondary"><?php echo $row['status']; ?></span>
                                     <?php endif; ?>
+                                </td>
+                                <td>
+                                    <a href="order_detail.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> Details
+                                    </a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>

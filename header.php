@@ -1,10 +1,10 @@
-<!-- Font Awesome  link-->
+<!-- Font Awesome link -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <link rel="stylesheet" href="head.css">
 
 <header class="main-header">
   <div class="header-container">
-    <a href="./index.php" class="logo">
+    <a href="index.php" class="logo">
       <h1>Kalungu <span>Quality Feeds</span></h1>
     </a>
     <p class="tagline">Feeding the Future of Farming</p>
@@ -16,8 +16,8 @@
   </div>
 
   <nav class="main-nav" id="mainNav">
-    <a href="index.php" >Home</a>
-    <a href="about.php">About Us</a>
+    <a href="index.php">Home</a>
+    <a href="about.php">About Us</a> 
     <a href="product.php">Products</a>
     <a href="order.php">Order</a>
     <a href="contact.php">Contact</a>
@@ -27,11 +27,12 @@
     }
     if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
         if ($_SESSION['role'] == 'admin') {
-            echo '<a href="view_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a>';
+            echo '<a href="website/admin.php"><i class="fas fa-shield-alt"></i> Admin</a>';
+            echo '<a href="website/view_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a>';
         }
-        echo '<a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout (' . htmlspecialchars($_SESSION['username']) . ')</a>';
+        echo '<a href="' . 'logout.php"></i> Logout</a>';
     } else {
-        echo '<a href="login.php"></i> Login</a>';
+        echo '<a href="' . 'login.php">Login</a>';
     }
     ?>
   </nav>
@@ -52,12 +53,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const icon = this.querySelector('i');
             icon.classList.toggle('fa-bars');
             icon.classList.toggle('fa-times');
-            
-            // Prevent body scroll when menu is open
             document.body.style.overflow = mainNav.classList.contains('active') ? 'hidden' : '';
         });
         
-        // Close menu when clicking nav links
         navLinks.forEach(link => {
             link.addEventListener('click', function() {
                 if (window.innerWidth <= 768) {
@@ -70,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Close menu when clicking outside
         document.addEventListener('click', function(event) {
             if (!header.contains(event.target) && mainNav.classList.contains('active')) {
                 mainNav.classList.remove('active');
@@ -82,34 +79,28 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Sticky Header with Scroll Effect
     let lastScroll = 0;
     const scrollThreshold = 50;
     
     window.addEventListener('scroll', function() {
         const currentScroll = window.pageYOffset;
-        
-        // Add/remove scrolled class
         if (currentScroll > scrollThreshold) {
             header.classList.add('scrolled');
         } else {
             header.classList.remove('scrolled');
         }
-        
         lastScroll = currentScroll;
     }, { passive: true });
     
-    // Set active link based on current page
-    const currentPage = window.location.pathname.split('/').pop() || 'index.php';
+    const currentPage = window.location.pathname;
     navLinks.forEach(link => {
         link.classList.remove('active');
         const href = link.getAttribute('href');
-        if (href === currentPage || (currentPage === '' && href === 'index.php')) {
+        if (currentPage.indexOf(href) !== -1) {
             link.classList.add('active');
         }
     });
     
-    // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
             const targetId = this.getAttribute('href');
@@ -119,10 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (target) {
                     const headerHeight = header.offsetHeight;
                     const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
+                    window.scrollTo({ top: targetPosition, behavior: 'smooth' });
                 }
             }
         });

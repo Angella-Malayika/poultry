@@ -1,5 +1,6 @@
 <?php
 include("connection.php");
+// include("connection.php");
 //  $Firstname =$_POST['user'];
 if(isset($_POST['submit'])){
     $Firstname =$_POST['nakanwagi'];
