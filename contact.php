@@ -58,7 +58,7 @@
                     <div class="info-item">
                         <i class="fas fa-envelope"></i>
                         <p><strong>Email:</strong> 
-                            <a href="mailto:kalungufeeds167@gmail.com">nakanwagiangella61@gmail.com</a>
+                            <a href="mailto:kalungufeeds167@gmail.com">kalungufeeds167@gmail.com</a>
                         </p>
                     </div>
                     
@@ -81,7 +81,10 @@
                         </div>
                         
                         <div class="mb-3">
-                            <input type="email" class="form-control" name="email" placeholder="Your Email" required>
+                            <input type="email" class="form-control" name="email" placeholder="Your Email (must be @gmail.com)" 
+                                pattern="[a-zA-Z0-9._%+\-]+@gmail\.com" 
+                                title="Please enter a valid Gmail address (e.g., yourname@gmail.com)"
+                                required>
                         </div>
                         
                         <div class="mb-3">

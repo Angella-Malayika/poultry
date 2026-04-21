@@ -103,6 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $order_item_inputs = [];
     $item_totals = [];
     $total_quantity = 0.0;
+    $validation_error = '';
 
     foreach ($selected_products as $index => $product_key_raw) {
         $product_key = trim((string) $product_key_raw);
@@ -115,6 +116,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($product_key === '' && $item_quantity <= 0) {
             continue;
+        }
+
+        if ($item_quantity > 0) {
+            if ($unit_key === 'kg') {
+                if ($item_quantity < 1 || fmod($item_quantity, 0.5) !== 0.0) {
+                    $validation_error = 'Kg quantities must start from 1 and increase by 0.5.';
+                    break;
+                }
+            } else {
+                if ($item_quantity < 1 || floor($item_quantity) != $item_quantity) {
+                    $validation_error = 'Non-kg quantities must be whole numbers starting from 1.';
+                    break;
+                }
+            }
         }
 
         $safe_display_quantity = $item_quantity > 0 ? $item_quantity : 1;
@@ -146,7 +161,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($full_name_value === '' || $phone_value === '' || $address_value === '' || $delivery_date_value === '') {
         $message = '<div class="alert alert-danger">Please fill in all required fields.</div>';
-    } elseif (count($item_totals) === 0 || $total_quantity <= 0) {
+    } elseif (!preg_match('/^\d{10}$/', $phone_value)) {
+        $message = '<div class="alert alert-danger">Phone number must be exactly 10 digits.</div>';
+    } elseif ($delivery_date_value < date('Y-m-d')) {
+        $message = '<div class="alert alert-danger">Delivery date must be today or later.</div>';
+    } elseif ($validation_error !== '') {
+        $message = '<div class="alert alert-danger">' . htmlspecialchars($validation_error) . '</div>';
+    } elseif (count($item_totals) < 1 || $total_quantity <= 0) {
         $message = '<div class="alert alert-danger">Please add at least one valid product with quantity greater than zero.</div>';
     } else {
         $product_parts = [];
@@ -179,6 +200,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $fetch_result = mysqli_query($conn, $fetch_sql);
                 if ($fetch_result && mysqli_num_rows($fetch_result) > 0) {
                     $order_details = mysqli_fetch_assoc($fetch_result);
+                    
+                    // Send order confirmation email
+                    require_once 'email_config.php';
+                    sendOrderConfirmationEmail($order_details);
                 }
             } else {
                 $message = '<div class="alert alert-danger">Error: ' . htmlspecialchars($stmt->error) . '</div>';
@@ -341,8 +366,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label for="phone"><i class="fas fa-phone me-2"></i>Phone Number</label>
                                 <input type="tel" id="phone" name="phone" placeholder="Enter your phone number"
                                     value="<?php echo htmlspecialchars($phone_value); ?>"
-                                    required pattern="[0-9]+"
-                                    title="Phone number must contain only digits">
+                                    required pattern="[0-9]{10}" minlength="10" maxlength="10" inputmode="numeric"
+                                    title="Phone number must be exactly 10 digits">
                             </div>
 
                             <!-- Select Products -->
@@ -362,7 +387,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 </select>
                                             </div>
                                             <div class="col-md-3">
-                                                <input type="number" name="quantities[]" class="form-control" placeholder="Quantity" min="0.01" step="0.01" value="<?php echo htmlspecialchars((string) ($item['quantity'] ?? '1')); ?>" required>
+                                                <input type="number" name="quantities[]" class="form-control" placeholder="Quantity" min="1" step="0.5" value="<?php echo htmlspecialchars((string) ($item['quantity'] ?? '1')); ?>" required>
                                             </div>
                                             <div class="col-md-3">
                                                 <select name="units[]" class="form-control" required>
@@ -396,7 +421,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Preferred Delivery Date -->
                             <div class="form-group">
                                 <label for="delivery-date"><i class="fas fa-calendar me-2"></i>Preferred Delivery Date</label>
-                                <input type="date" id="delivery-date" name="delivery_date" value="<?php echo htmlspecialchars($delivery_date_value); ?>" required>
+                                <input type="date" id="delivery-date" name="delivery_date" value="<?php echo htmlspecialchars($delivery_date_value); ?>"
+                                min="<?php echo date('Y-m-d'); ?>" required>
                             </div>
 
                             <!-- Submit Button -->
@@ -434,95 +460,128 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <script>
         // Extra safeguard for real-time input
-        document.getElementById('full-name').addEventListener('input', function() {
-            this.value = this.value.replace(/[^A-Za-z\s]/g, '');
-        });
+        const fullNameInput = document.getElementById('full-name');
+        if (fullNameInput) {
+            fullNameInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+            });
+        }
 
-        document.getElementById('phone').addEventListener('input', function() {
-            this.value = this.value.replace(/[^0-9]/g, '');
-        });
+        const phoneInput = document.getElementById('phone');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+            });
+        }
 
         const productRowsWrap = document.getElementById('product-rows');
         const addProductBtn = document.getElementById('add-product-row');
 
-        function updateRemoveButtons() {
-            const rows = productRowsWrap.querySelectorAll('.product-row');
-            rows.forEach((row) => {
-                const removeBtn = row.querySelector('.remove-product-row');
-                if (removeBtn) {
-                    removeBtn.disabled = rows.length === 1;
+        if (productRowsWrap && addProductBtn) {
+            function applyQtyRules(row) {
+                const qty = row.querySelector('input[name="quantities[]"]');
+                const unit = row.querySelector('select[name="units[]"]');
+                if (!qty || !unit) {
+                    return;
+                }
+
+                if (unit.value === 'kg') {
+                    qty.min = '1';
+                    qty.step = '0.5';
+                    if (!qty.value || parseFloat(qty.value) < 1) {
+                        qty.value = '1';
+                    }
+                } else {
+                    qty.min = '1';
+                    qty.step = '1';
+                    if (!qty.value || parseFloat(qty.value) < 1) {
+                        qty.value = '1';
+                    }
+                }
+            }
+
+            function updateRemoveButtons() {
+                const rows = productRowsWrap.querySelectorAll('.product-row');
+                rows.forEach((row) => {
+                    const removeBtn = row.querySelector('.remove-product-row');
+                    if (removeBtn) {
+                        removeBtn.disabled = rows.length === 1;
+                    }
+                });
+            }
+
+            addProductBtn.addEventListener('click', function() {
+                const baseRow = productRowsWrap.querySelector('.product-row');
+                if (!baseRow) {
+                    return;
+                }
+
+                const clone = baseRow.cloneNode(true);
+                const select = clone.querySelector('select[name="products[]"]');
+                const qty = clone.querySelector('input[name="quantities[]"]');
+                const unit = clone.querySelector('select[name="units[]"]');
+
+                if (select) {
+                    select.value = '';
+                }
+                if (qty) {
+                    qty.value = '1';
+                }
+                if (unit) {
+                    unit.value = 'kg';
+                }
+
+                productRowsWrap.appendChild(clone);
+                applyQtyRules(clone);
+                updateRemoveButtons();
+            });
+
+            productRowsWrap.addEventListener('change', function(event) {
+                const productSelect = event.target.closest('select[name="products[]"]');
+                if (!productSelect) {
+                    return;
+                }
+
+                const row = productSelect.closest('.product-row');
+                if (!row) {
+                    return;
+                }
+
+                const unitSelect = row.querySelector('select[name="units[]"]');
+                if (!unitSelect) {
+                    return;
+                }
+
+                const productKey = productSelect.value;
+                if (['chicks', 'chicken-drinkers', 'brooder-heater'].includes(productKey)) {
+                    unitSelect.value = 'pieces';
+                } else {
+                    unitSelect.value = 'kg';
+                }
+
+                applyQtyRules(row);
+            });
+
+            productRowsWrap.addEventListener('click', function(event) {
+                const removeBtn = event.target.closest('.remove-product-row');
+                if (!removeBtn) {
+                    return;
+                }
+
+                const rows = productRowsWrap.querySelectorAll('.product-row');
+                if (rows.length <= 1) {
+                    return;
+                }
+
+                const row = removeBtn.closest('.product-row');
+                if (row) {
+                    row.remove();
+                    updateRemoveButtons();
                 }
             });
-        }
 
-        addProductBtn.addEventListener('click', function() {
-            const baseRow = productRowsWrap.querySelector('.product-row');
-            if (!baseRow) {
-                return;
-            }
-
-            const clone = baseRow.cloneNode(true);
-            const select = clone.querySelector('select[name="products[]"]');
-            const qty = clone.querySelector('input[name="quantities[]"]');
-            const unit = clone.querySelector('select[name="units[]"]');
-
-            if (select) {
-                select.value = '';
-            }
-            if (qty) {
-                qty.value = '1';
-            }
-            if (unit) {
-                unit.value = 'kg';
-            }
-
-            productRowsWrap.appendChild(clone);
             updateRemoveButtons();
-        });
-
-        productRowsWrap.addEventListener('change', function(event) {
-            const productSelect = event.target.closest('select[name="products[]"]');
-            if (!productSelect) {
-                return;
-            }
-
-            const row = productSelect.closest('.product-row');
-            if (!row) {
-                return;
-            }
-
-            const unitSelect = row.querySelector('select[name="units[]"]');
-            if (!unitSelect) {
-                return;
-            }
-
-            const productKey = productSelect.value;
-            if (['chicks', 'chicken-drinkers', 'brooder-heater'].includes(productKey)) {
-                unitSelect.value = 'pieces';
-            } else {
-                unitSelect.value = 'kg';
-            }
-        });
-
-        productRowsWrap.addEventListener('click', function(event) {
-            const removeBtn = event.target.closest('.remove-product-row');
-            if (!removeBtn) {
-                return;
-            }
-
-            const rows = productRowsWrap.querySelectorAll('.product-row');
-            if (rows.length <= 1) {
-                return;
-            }
-
-            const row = removeBtn.closest('.product-row');
-            if (row) {
-                row.remove();
-                updateRemoveButtons();
-            }
-        });
-
-        updateRemoveButtons();
+        }
     </script>
     
     <?php include  'footer.php'; ?>

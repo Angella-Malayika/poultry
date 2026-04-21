@@ -67,8 +67,11 @@ if (isset($_POST['signup'])) {
                         }
 
                         if ($insertStmt->execute()) {
-                            // Registration successful
-                            $message = '<div class="alert alert-success">Account created successfully! <a href="login.php">Login here</a></div>';
+                            // Registration successful - Send welcome email
+                            require_once 'email_config.php';
+                            sendWelcomeEmail($email, $username);
+                            
+                            $message = '<div class="alert alert-success">Account created successfully! A welcome email has been sent to your inbox. <a href="login.php">Login here</a></div>';
                         } else {
                             $message = '<div class="alert alert-danger">Error: Something went wrong.</div>';
                         }
