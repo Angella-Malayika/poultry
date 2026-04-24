@@ -88,7 +88,8 @@
                         </div>
                         
                         <div class="mb-3">
-                            <input type="tel" class="form-control" name="phone" placeholder="Your Phone (Optional)">
+                            <input type="tel" class="form-control" name="phone" placeholder="Your Phone (Optional) " inputmode="numeric" maxlength="10"pattern="[0-9]{10}" title="phone number must be exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g, '')">
+                                   
                         </div>
                         
                         <div class="mb-3">

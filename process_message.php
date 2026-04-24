@@ -11,6 +11,11 @@ include("connection.php");
 $name = htmlspecialchars(trim($_POST['name'] ?? ''));
 $email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
 $phone = htmlspecialchars(trim($_POST['phone'] ?? 'Not provided'));
+if ($phone!== '' && !preg_match('/^\d{10}$/', $phone)){
+    $_SESSION['error'] = "phone number must be exactly 10 digits and contain numbers onlys.";
+    header("Location: contact.php");
+    exit();
+}
 $subject = htmlspecialchars(trim($_POST['subject'] ?? ''));
 $message = htmlspecialchars(trim($_POST['message'] ?? ''));
 

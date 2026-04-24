@@ -1,9 +1,5 @@
 <?php
-session_start();
-if (!isset($_SESSION['logged_in']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header('Location: ../login.php');
-    exit();
-}
+require_once __DIR__ . '/admin_auth_required.php';
 
 include 'connection.php';
 
@@ -16,8 +12,10 @@ $upload_sections = [
     'layers' => 'Layers',
     'animal-feeds' => 'Animal Feeds',
     'day-old-chicks' => 'One-Day-Old Chicks',
+    'Our Products Gallery' => 'Our Products Gallery',
 ];
 $selected_section = 'broilers';
+$selected_section = 'Our Products Gallery';
 
 function ensure_photo_schema($conn, &$columns)
 {
@@ -62,6 +60,13 @@ function ensure_photo_schema($conn, &$columns)
         $columns[] = 'product_section';
     }
 
+    if (!in_array('product_slug', $columns, true)) {
+        if (!mysqli_query($conn, "ALTER TABLE photos ADD COLUMN product_slug VARCHAR(80) NULL")) {
+            return 'Unable to add product_slug column in photos table.';
+        }
+        $columns[] = 'product_slug';
+    }
+
     return '';
 }
 
@@ -69,6 +74,18 @@ $schema_error = ensure_photo_schema($conn, $photo_columns);
 if ($schema_error !== '') {
     $message = $schema_error;
     $message_type = 'danger';
+}
+
+// Fetch available products for the dropdown
+$available_products = [];
+$products_table_check = mysqli_query($conn, "SHOW TABLES LIKE 'products'");
+if ($products_table_check && mysqli_num_rows($products_table_check) > 0) {
+    $products_result = mysqli_query($conn, "SELECT slug, name FROM products WHERE is_active = 1 ORDER BY name ASC");
+    if ($products_result) {
+        while ($product_row = mysqli_fetch_assoc($products_result)) {
+            $available_products[$product_row['slug']] = $product_row['name'];
+        }
+    }
 }
 
 if (isset($_POST['upload'])) {
@@ -124,14 +141,20 @@ if (isset($_POST['upload'])) {
 
                 $extension = $mime_map[$file_type] ?? 'jpg';
                 $stored_name = $safe_base . '_' . time() . '.' . $extension;
+                
+                // Get selected product slug if any
+                $product_slug = isset($_POST['product_slug']) ? trim((string) $_POST['product_slug']) : '';
+                if (!isset($available_products[$product_slug])) {
+                    $product_slug = null;
+                }
 
-                $stmt = $conn->prepare("INSERT INTO photos (image, image_data, image_mime, product_section) VALUES (?, ?, ?, ?)");
+                $stmt = $conn->prepare("INSERT INTO photos (image, image_data, image_mime, product_section, product_slug) VALUES (?, ?, ?, ?, ?)");
                 if (!$stmt) {
                     $message = 'Database insert failed.';
                     $message_type = 'danger';
                 } else {
                     $blob_param = null;
-                    $stmt->bind_param("sbss", $stored_name, $blob_param, $file_type, $selected_section);
+                    $stmt->bind_param("sbsss", $stored_name, $blob_param, $file_type, $selected_section, $product_slug);
                     $stmt->send_long_data(1, $image_data);
 
                     if ($stmt->execute()) {
@@ -421,6 +444,18 @@ if ($schema_error === '') {
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="product_slug" class="form-label fw-semibold">Link to Product (Optional)</label>
+                                    <select id="product_slug" name="product_slug" class="form-select">
+                                        <option value="">-- None / Auto-select --</option>
+                                        <?php foreach ($available_products as $slug => $name): ?>
+                                            <option value="<?php echo htmlspecialchars($slug); ?>">
+                                                <?php echo htmlspecialchars($name); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <small class="text-muted d-block mt-1">Select a specific product to link this image to. Users clicking the image will go to that product's details page.</small>
                                 </div>
                                 <div class="drop-hint mb-3">
                                     <label for="image" class="form-label fw-semibold">Choose Image</label>

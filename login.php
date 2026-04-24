@@ -56,10 +56,14 @@ if (isset($_POST['login'])) {
                         $_SESSION['user_id']   = (int) $row['id'];
                         $_SESSION['username']  = $row['username'];
                         $_SESSION['email']     = $row['email'];
-                        $_SESSION['role']      = $has_role ? ($row['role'] ?? 'user') : 'user';
+                        $role = $has_role ? strtolower(trim((string) ($row['role'] ?? 'user'))) : 'user';
+                        if ($role === '') {
+                            $role = 'user';
+                        }
+                        $_SESSION['role'] = $role;
 
-                        if ($_SESSION['role'] === 'admin') {
-                            header("Location: website/admin.php");
+                        if ($role === 'admin') {
+                            header("Location: Admin/admin.php");
                         } else {
                             header("Location: index.php");
                         }
@@ -192,6 +196,10 @@ if (isset($_POST['login'])) {
                 <i class="fas fa-sign-in-alt"></i> SignIn
             </button>
         </form>
+
+        <div class="alert alert-info mt-3 small">
+            <strong>Demo admin:</strong> admin@kalungufeeds.com / Admin@123
+        </div>
         
         <div class="text-center">
             <p>Don't have an account? <a href="signup.php">Sign up here</a></p>

@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/admin_auth_required.php';
+
 include 'connection.php';
 
 $photos = [];

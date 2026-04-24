@@ -1,9 +1,5 @@
 <?php
-session_start();
-if (!isset($_SESSION['logged_in']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header('Location: ../login.php');
-    exit();
-}
+require_once __DIR__ . '/admin_auth_required.php';
 include 'connection.php';
 
 $messages = [];

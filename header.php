@@ -26,13 +26,14 @@
         session_start();
     }
     if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
-        if ($_SESSION['role'] == 'admin') {
-            echo '<a href="website/admin.php"><i class="fas fa-shield-alt"></i> Admin</a>';
-            echo '<a href="website/view_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a>';
+        $role = strtolower((string) ($_SESSION['role'] ?? ''));
+        if ($role === 'admin') {
+            echo '<a href="Admin/admin.php"><i class="fas fa-shield-alt"></i> Admin</a>';
+            echo '<a href="Admin/view_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a>';
         }
-        echo '<a href="' . 'logout.php"></i> Logout</a>';
+        echo '<a href="logout.php"><i class="fas fa-right-from-bracket"></i> Logout</a>';
     } else {
-        echo '<a href="' . 'login.php">Login</a>';
+        echo '<a href="login.php">Login</a>';
     }
     ?>
   </nav>

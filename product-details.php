@@ -112,7 +112,8 @@ $benefits = !empty($product['benefits']) ? explode('|', $product['benefits']) : 
 
                     <!-- Call to Action -->
                     <div class="cta-buttons">
-                        <a href="order.php" class="btn btn-lg" style="background-color: #2e7d32; color: white; border: none;">
+                        <a href="order.php?product=<?php echo urldecode($product['slug']); ?>" 
+                        class="btn btn-lg" style="background-color: #2e7d32; color: white; border: none;">
                             <i class="fas fa-shopping-cart me-2"></i>Order Now
                         </a>
                         <a href="contact.php" class="btn btn-lg" style="background-color: white; color: #2e7d32; border: 2px solid #2e7d32;">
