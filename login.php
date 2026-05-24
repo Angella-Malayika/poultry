@@ -111,7 +111,7 @@ if (isset($_POST['login'])) {
             padding: 40px;
             border-radius: 15px;
             box-shadow: 0 15px 40px rgba(46, 125, 50, 0.3);
-            max-width: 450px;
+            max-width: 400px;
             width: 100%;
         }
 
@@ -147,6 +147,34 @@ if (isset($_POST['login'])) {
             border-color: var(--primary-color);
             box-shadow: 0 0 10px rgba(46, 125, 50, 0.2);
             background-color: white;
+        }
+
+        .password-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 0.85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
+            padding: 0;
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .password-toggle:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        .password-input {
+            padding-right: 2.5rem;
         }
 
         .btn-login {
@@ -189,7 +217,12 @@ if (isset($_POST['login'])) {
             
             <div class="mb-3">
                 <label for="password" class="form-label"><i class="fas fa-lock"></i> Password</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                <div class="password-group">
+                    <input type="password" class="form-control password-input" id="password" name="password" placeholder="Enter your password" required>
+                    <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password" aria-pressed="false">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
             
             <button type="submit" name="login" class="btn btn-login">
@@ -197,9 +230,9 @@ if (isset($_POST['login'])) {
             </button>
         </form>
 
-        <div class="alert alert-info mt-3 small">
+        <!-- <div class="alert alert-info mt-3 small">
             <strong>Demo admin:</strong> admin@kalungufeeds.com / Admin@123
-        </div>
+        </div> -->
         
         <div class="text-center">
             <p>Don't have an account? <a href="signup.php">Sign up here</a></p>
@@ -208,5 +241,23 @@ if (isset($_POST['login'])) {
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+
+        if (passwordInput && togglePassword) {
+            togglePassword.addEventListener('click', function () {
+                const isHidden = passwordInput.type === 'password';
+                passwordInput.type = isHidden ? 'text' : 'password';
+                this.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+                this.setAttribute('aria-pressed', String(isHidden));
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('fa-eye');
+                    icon.classList.toggle('fa-eye-slash');
+                }
+            });
+        }
+    </script>
 </body>
 </html>

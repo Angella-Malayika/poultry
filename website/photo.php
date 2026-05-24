@@ -12,7 +12,7 @@ if ($photo_id <= 0) {
 }
 
 // Connect to database
-include 'connection.php';
+require_once __DIR__ . '/../connection.php';
 
 // Check if photos table exists
 $table_check = mysqli_query($conn, "SHOW TABLES LIKE 'photos'");

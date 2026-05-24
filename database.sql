@@ -259,6 +259,7 @@ ON DUPLICATE KEY UPDATE
 -- To create your own admin, register a normal account via signup.php,
 -- then run:  UPDATE users SET role = 'admin' WHERE email = 'your-email@example.com';
 -- ============================================================
+use poultry;
 INSERT INTO users (username, email, password, role) VALUES
 ('Admin', 'admin@kalungufeeds.com', '$2y$12$8/qAxFOSdd0mFKCZb4wU.Oqbi7qdXP/yyO13dEabibd4QMvLhzzY2', 'admin')
 ON DUPLICATE KEY UPDATE role = 'admin';

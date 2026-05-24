@@ -222,7 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Place an Order | Kalungu Quality Feeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="joy.css">
+    <link rel="stylesheet" href="./assets/joy.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <style>
     </style>
@@ -282,13 +282,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                         <h5 class="text-muted mb-2"><i class="fas fa-user"></i> Full Name</h5>
-                                        <p style="font-size: 1.1rem; font-weight: 500;">
+                                        <p style="font-size: 1.1rem; font-weight: 300;">
                                             <?php echo htmlspecialchars($order_details['full_name']); ?>
                                         </p>
                                     </div>
                                     <div class="col-md-6">
                                         <h5 class="text-muted mb-2"><i class="fas fa-envelope"></i> Email</h5>
-                                        <p style="font-size: 1.1rem; font-weight: 500;">
+                                        <p style="font-size: 1.1rem; font-weight: 300;">
                                             <?php echo htmlspecialchars($order_details['email']); ?>
                                         </p>
                                     </div>
@@ -297,30 +297,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                         <h5 class="text-muted mb-2"><i class="fas fa-phone"></i> Phone Number</h5>
-                                        <p style="font-size: 1.1rem; font-weight: 500;">
+                                        <p style="font-size: 1.1rem; font-weight: 300;">
                                             <?php echo htmlspecialchars($order_details['phone']); ?>
                                         </p>
                                     </div>
                                     <div class="col-md-6">
                                         <h5 class="text-muted mb-2"><i class="fas fa-calendar-alt"></i> Delivery Date</h5>
-                                        <p style="font-size: 1.1rem; font-weight: 500;">
+                                        <p style="font-size: 1.1rem; font-weight: 300;">
                                             <?php echo date('M d, Y', strtotime($order_details['delivery_date'])); ?>
                                         </p>
                                     </div>
                                 </div>
 
-                                <hr>
-
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                             <h5 class="text-muted mb-2"><i class="fas fa-cube"></i> Products</h5>
-                                        <p style="font-size: 1.1rem; font-weight: 500;">
+                                        <p style="font-size: 1.1rem; font-weight: 300;">
                                             <?php echo htmlspecialchars($order_details['product']); ?>
                                         </p>
                                     </div>
                                     <div class="col-md-6">
                                             <h5 class="text-muted mb-2"><i class="fas fa-boxes"></i> Total Quantity</h5>
-                                        <p style="font-size: 1.1rem; font-weight: 500;">
+                                        <p style="font-size: 1.1rem; font-weight: 300;">
                                             <?php echo htmlspecialchars(format_quantity_value((float) $order_details['quantity'])); ?>
                                         </p>
                                     </div>
@@ -330,7 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                 <div class="mb-4">
                                     <h5 class="text-muted mb-2"><i class="fas fa-map-marker-alt"></i> Delivery Address</h5>
-                                    <p style="font-size: 1.1rem; font-weight: 500;">
+                                    <p style="font-size: 1.1rem; font-weight: 300;">
                                         <?php echo htmlspecialchars($order_details['delivery_address']); ?>
                                     </p>
                                 </div>
@@ -433,7 +431,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <!-- Side Information -->
-                <div class="col-lg-4 ">
+                <div class="col-lg-1 ">
                     <div class="info-box">
                         <h4><i class="fas fa-truck"></i>Fast Delivery</h4>
                         <p>We deliver within 24 hours to Kalungu and surrounding areas.</p>

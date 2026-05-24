@@ -2,6 +2,22 @@
 require_once 'auth_required.php';
 include("connection.php");
 
+$fallback_image = 'images/fs.broiler-chicks.avif';
+
+function is_recent_product(string $created_at, int $days = 14): bool
+{
+    if ($created_at === '') {
+        return false;
+    }
+
+    $timestamp = strtotime($created_at);
+    if ($timestamp === false) {
+        return false;
+    }
+
+    return $timestamp >= strtotime('-' . $days . ' days');
+}
+
 // Get category from URL
 $category_slug = isset($_GET['category']) ? mysqli_real_escape_string($conn, $_GET['category']) : 'feeds';
 
@@ -19,7 +35,7 @@ if (!$cat_result || mysqli_num_rows($cat_result) == 0) {
 $category_data = mysqli_fetch_assoc($cat_result);
 
 // Fetch products for this category
-$products_sql = "SELECT * FROM products WHERE category_id = '{$category_data['id']}' AND is_active = 1 ORDER BY sort_order ASC";
+$products_sql = "SELECT *, created_at FROM products WHERE category_id = '{$category_data['id']}' AND is_active = 1 ORDER BY created_at DESC, sort_order ASC, name ASC";
 $products_result = mysqli_query($conn, $products_sql);
 
 $products = [];
@@ -143,8 +159,13 @@ if ($products_result) {
                 <?php foreach ($products as $product): ?>
                     <div class="col-md-6 col-lg-4">
                         <div class="card product-card">
-                            <img src="<?php echo htmlspecialchars($product['image']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                            <img src="<?php echo htmlspecialchars(!empty($product['image']) ? $product['image'] : $fallback_image); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($product['name']); ?>">
                             <div class="card-body d-flex flex-column">
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    <?php if (is_recent_product((string) ($product['created_at'] ?? ''))): ?>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">New</span>
+                                    <?php endif; ?>
+                                </div>
                                 <h5 class="card-title"><?php echo htmlspecialchars($product['name']); ?></h5>
                                 <p class="card-text text-muted small flex-grow-1"><?php echo htmlspecialchars($product['description']); ?></p>
                                 <a href="product-details.php?product=<?php echo htmlspecialchars($product['slug']); ?>" class="btn btn-view btn-sm">
@@ -173,7 +194,7 @@ if ($products_result) {
         </div>
     </section>
 
-    <?php include 'footer.php'; ?>
+    <?php include '../assets/css/footer.css'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>

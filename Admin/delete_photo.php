@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/admin_auth_required.php';
+require_once __DIR__ . '/../auth_required.php';
 
 include 'connection.php';
 
@@ -101,7 +101,7 @@ if (isset($_POST['confirm_delete'])) {
         </div>
         <nav class="nav flex-column">
             <a class="nav-link" href="admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
-            <a class="nav-link" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Upload Photo</a>
+            <a class="nav-link" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
             <a class="nav-link" href="view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
             <a class="nav-link" href="view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
             <a class="nav-link text-danger mt-3" href="adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>

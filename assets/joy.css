@@ -523,169 +523,41 @@ blockquote {
 } 
 /* End of about page */
 
-/* ---------- product page ---------- */
-
-.product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.product-img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 6px;
-}
-
-/* Product Gallery Cards - Consistent Sizing */
-.product-card {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-    background: white;
-    text-align: center;
-}
-
-
-.product-image {
-    position: relative;
-    width: 100%;
-    height: 250px;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.product-gallery-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.product-info {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    padding: 20px;
-}
-
-.product-info h3 {
-    font-size: 1.2rem;
-    margin: 0 0 12px 0;
-    color: #333;
-    font-weight: 600;
-    text-align: center;
-    height: 2.4em;
-    line-height: 1.2em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.product-info .description {
-    font-size: 0.95rem;
-    color: #666;
-    margin-bottom: 16px;
-    text-align: center;
-    height: 3.8em;
-    line-height: 1.3em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.product-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    padding: 12px 0;
-    font-size: 0.9rem;
-    border-top: 1px solid #e5e5e5;
-    border-bottom: 1px solid #e5e5e5;
-}
-
-.product-meta .price {
-    font-weight: bold;
-    color: #2e7d32;
-    font-size: 1.1rem;
-}
-
-.product-meta .stock {
-    color: #999;
-    font-size: 0.85rem;
-}
-
-.product-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: auto;
-}
-
-.product-actions .btn {
-    flex: 1;
-    padding: 10px;
-    font-size: 0.9rem;
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-.stock-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: #ff6b6b;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    z-index: 1;
-}
-
-.stock-badge.low-stock {
-    background: #ffc107;
-    color: #333;
-}
-/* End of product page */
 /* ---------- order page ---------- */
        
         
         .order-hero {
-            background: linear-gradient( 0%, #1b5e20 100%);
-            color: #1b5e20;
-            padding: 3rem 0;
-            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: #ffffff;
+            padding: 2rem 0;
+            margin-bottom: 1.25rem;
             text-align: center;
         }
 
         .order-hero h1 {
-            font-size: 2.5rem;
+            font-size: clamp(1.8rem, 3vw, 2.4rem);
             font-weight: bold;
+            margin-bottom: 0.5rem;
         }
         
         .order-section {
             background-color: white;
-            padding: 3rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.1);
-            margin-bottom: 3rem;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 28px rgba(46, 125, 50, 0.08);
+            margin-bottom: 1.5rem;
         }
         
         .order-section h2 {
             color: var(--primary-color);
-            margin-bottom: 2rem;
-            border-bottom: 3px solid var(--primary-color);
-            padding-bottom: 1rem;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+            padding-bottom: 0.8rem;
+            font-size: 1.45rem;
         }
         
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
         
         .form-group label {
@@ -693,17 +565,17 @@ blockquote {
             font-weight: 700;
             margin-bottom: 0.5rem;
             display: block;
-            font-size: 1.05rem;
+            font-size: 0.98rem;
         }
         
         #order-form input,
         #order-form select,
         #order-form textarea {
             width: 100%;
-            padding: 0.75rem;
+            padding: 0.65rem 0.8rem;
             border: 2px solid var(--input-border);
-            border-radius: 6px;
-            font-size: 1rem;
+            border-radius: 12px;
+            font-size: 0.98rem;
             color: var(--text-color);
             background-color: var(--white);
             transition: border-color 0.3s ease;
@@ -720,17 +592,17 @@ blockquote {
         
         #order-form textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 80px;
         }
         
         #order-form button {
             width: 100%;
-            padding: 1rem;
+            padding: 0.85rem 1rem;
             background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 6px;
-            font-size: 1.1rem;
+            border-radius: 12px;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease;
@@ -743,9 +615,9 @@ blockquote {
         }
         
         .alert {
-            border-radius: 6px;
+            border-radius: 12px;
             border-left: 4px solid;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
         
         .alert-success {
@@ -762,9 +634,9 @@ blockquote {
         
         .breadcrumb {
             background-color: var(--white);
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 2rem;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
         }
         
         .breadcrumb a {
@@ -778,10 +650,11 @@ blockquote {
         .info-box {
             background-color: var(--light-bg);
             border-left: 4px solid var(--primary-color);
-            padding: 3.5rem;
-            border-radius: 6px;
-            margin-bottom: 2rem;
-            margin-right: -300px;
+            padding: 1.2rem 1.15rem;
+            border-radius: 14px;
+            margin-bottom: 1rem;
+            margin-right: 0;
+            box-shadow: 0 8px 22px rgba(46, 125, 50, 0.06);
         }
         
         .info-box h4 {
@@ -855,16 +728,24 @@ blockquote {
 
         /* Sticky side info only on order page layout */
         .order-hero + section .col-lg-4 {
-            position: sticky;
-            top: 88px;
-            align-self: flex-start;
+                        position: static;
+                        top: auto;
+                        align-self: auto;
         }
 
         /* Mobile refinements */
         @media (max-width: 992px) {
           .order-section { padding: 1.5rem; }
           .order-hero { padding: 2rem 0; }
+                    .order-hero + section .col-lg-4 { position: static; }
         }
+
+                @media (max-width: 768px) {
+                    .order-section { padding: 1.1rem; }
+                    .order-section h2 { font-size: 1.25rem; }
+                    .info-box { padding: 1rem; }
+                    .breadcrumb { padding: 0.65rem 0.8rem; }
+                }
 
         @media (prefers-reduced-motion: reduce) {
           .order-hero h1, .order-hero .lead { animation: none; }

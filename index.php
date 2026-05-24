@@ -1,12 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
+<?php
+include 'connection.php';
+
+$upload_sections = [
+    'broilers' => 'Broilers',
+    'layers' => 'Layers',
+    'animal-feeds' => 'Animal Feeds',
+    'day-old-chicks' => 'One-Day-Old Chicks',
+];
+
+$section_detail_fallback = [
+    'broilers' => 'broiler',
+    'layers' => 'layer',
+    'animal-feeds' => 'pig',
+    'day-old-chicks' => 'chicks',
+];
+
+$product_detail_map = [];
+$products_table = mysqli_query($conn, "SHOW TABLES LIKE 'products'");
+if ($products_table && mysqli_num_rows($products_table) > 0) {
+    $products_result = mysqli_query($conn, "SELECT slug, name FROM products WHERE is_active = 1");
+    if ($products_result) {
+        while ($product_row = mysqli_fetch_assoc($products_result)) {
+            $slug = trim((string) ($product_row['slug'] ?? ''));
+            if ($slug === '') {
+                continue;
+            }
+            $product_detail_map[$slug] = (string) ($product_row['name'] ?? $slug);
+        }
+    }
+}
+
+$latest_uploads = [];
+$table_check = mysqli_query($conn, "SHOW TABLES LIKE 'photos'");
+if ($table_check && mysqli_num_rows($table_check) > 0) {
+    $columns = [];
+    $columns_result = mysqli_query($conn, "SHOW COLUMNS FROM photos");
+    if ($columns_result) {
+        while ($column = mysqli_fetch_assoc($columns_result)) {
+            $columns[] = $column['Field'];
+        }
+    }
+
+    $select_columns = ['id'];
+    if (in_array('product_section', $columns, true)) {
+        $select_columns[] = 'product_section';
+    }
+    if (in_array('product_slug', $columns, true)) {
+        $select_columns[] = 'product_slug';
+    }
+
+    $photo_query = "SELECT " . implode(', ', $select_columns) . " FROM photos ORDER BY id DESC LIMIT 8";
+    $photo_result = mysqli_query($conn, $photo_query);
+    if ($photo_result) {
+        while ($photo_row = mysqli_fetch_assoc($photo_result)) {
+            $latest_uploads[] = $photo_row;
+        }
+    }
+}
+?>
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kalungu Quality Feeds</title>
     <link
         rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="joy.css" />
+    <link rel="stylesheet" href="./assets/joy.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 </head>
 
@@ -64,6 +124,7 @@
             <a class="dealer-item" href="product-category.php?category=consultancy">Consultancy</a>
         </div>
     </section>
+
     <?php include 'footer.php'; ?>
 
   

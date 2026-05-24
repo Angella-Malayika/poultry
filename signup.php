@@ -112,15 +112,16 @@ if (isset($_POST['signup'])) {
         .register-container {
             background: white;
             padding: 40px;
-            border-radius: 15px;
+            border-radius: 10px;
             box-shadow: 0 15px 40px rgba(46, 125, 50, 0.3);
-            max-width: 500px;
+            max-width: 400px;
             width: 100%;
         }
         .register-header {
             text-align: center;
             margin-bottom: 30px;
-            border-bottom: 3px solid var(--primary-color);
+            border-bottom: none;
+            padding-bottom: 8px;
             padding-bottom: 20px;
         }
         .register-header i {
@@ -149,6 +150,34 @@ if (isset($_POST['signup'])) {
             border-color: var(--primary-color);
             box-shadow: 0 0 10px rgba(46, 125, 50, 0.2);
             background-color: white;
+        }
+
+        .password-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 0.85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
+            padding: 0;
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .password-toggle:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        .password-input {
+            padding-right: 2.5rem;
         }
         .btn-register {
             background: linear-gradient(135deg, var(--primary-color) 0%, #1b5e20 100%);
@@ -193,12 +222,22 @@ if (isset($_POST['signup'])) {
             
             <div class="mb-3">
                 <label class="form-label"><i class="fas fa-lock"></i> Password</label>
-                <input type="password" class="form-control" name="password" required minlength="6">
+                <div class="password-group">
+                    <input type="password" class="form-control password-input" id="password" name="password" required minlength="6">
+                    <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password" aria-pressed="false">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
             
             <div class="mb-3">
                 <label class="form-label"><i class="fas fa-lock"></i> Confirm Password</label>
-                <input type="password" class="form-control" name="confirm_password" required minlength="6">
+                <div class="password-group">
+                    <input type="password" class="form-control password-input" id="confirm_password" name="confirm_password" required minlength="6">
+                    <button type="button" class="password-toggle" id="toggleConfirmPassword" aria-label="Show confirm password" aria-pressed="false">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
             
             <button type="submit" name="signup" class="btn btn-primary btn-register">
@@ -213,5 +252,31 @@ if (isset($_POST['signup'])) {
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function bindPasswordToggle(inputId, toggleId) {
+            const input = document.getElementById(inputId);
+            const toggle = document.getElementById(toggleId);
+
+            if (!input || !toggle) {
+                return;
+            }
+
+            toggle.addEventListener('click', function () {
+                const isHidden = input.type === 'password';
+                input.type = isHidden ? 'text' : 'password';
+                this.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+                this.setAttribute('aria-pressed', String(isHidden));
+
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('fa-eye');
+                    icon.classList.toggle('fa-eye-slash');
+                }
+            });
+        }
+
+        bindPasswordToggle('password', 'togglePassword');
+        bindPasswordToggle('confirm_password', 'toggleConfirmPassword');
+    </script>
 </body>
 </html>

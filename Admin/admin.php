@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/admin_auth_required.php';
+require_once __DIR__ . '/../auth_required.php';
 include 'connection.php';
 
 $photos = [];
@@ -143,7 +143,7 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
         </div>
         <nav class="nav flex-column">
             <a class="nav-link active" href="admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
-            <a class="nav-link" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Upload Photo</a>
+            <a class="nav-link" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
             <a class="nav-link" href="view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
             <a class="nav-link" href="view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
             <a class="nav-link mt-auto text-danger" href="adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
@@ -215,7 +215,7 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
                         <i class="bi bi-display"></i> User Gallery
                     </a>
                     <a href="upload_photo.php" class="btn ">
-                        <i class="bi bi-plus-circle"></i> Upload New Photo
+                        <i class="bi bi-plus-circle"></i> Add Product
                     </a>
                 </div>
             </div>
@@ -242,7 +242,7 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
                         <i class="bi bi-camera"></i>
                         <h5>No photos yet</h5>
                         <p>Upload your first poultry photo to get started.</p>
-                        <a href="upload_photo.php" class="btn btn-success"><i class="bi bi-plus-circle"></i> Upload Photo</a>
+                        <a href="upload_photo.php" class="btn btn-success"><i class="bi bi-plus-circle"></i> Add Product</a>
                     </div>
                 </div>
             <?php endif; ?>
