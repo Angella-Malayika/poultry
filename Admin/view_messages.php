@@ -138,7 +138,7 @@ $unread_count = count(array_filter($messages, static function ($message) {
         }
     body { background: #f0f2f5; }
     .sidebar {
-        background: linear-gradient(135deg, #0f3c2a, #1f6b3f);
+        background: linear-gradient(135deg, var(--leaf-900), var(--leaf-700));
         min-height: 100vh;
         color: #fff;
         padding-top: 20px;
@@ -212,7 +212,6 @@ $unread_count = count(array_filter($messages, static function ($message) {
             <h5 class="mb-0"><i class="bi bi-envelope me-2"></i>Messages</h5>
             <div class="d-flex align-items-center gap-3">
                 <span class="text-muted">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
-                <a href="adlogout.php" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-left"></i> Logout</a>
             </div>
         </div>
 

@@ -12,6 +12,199 @@
 </head>
 
 <body>
+    <style>
+        .section-heading h2 {
+    color: #2e7d32;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.section-kicker {
+    display: inline-block;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(46, 125, 50, 0.1);
+    color: #2e7d32;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 0.9rem;
+}
+
+.section-heading p {
+    max-width: 760px;
+    margin: 0 auto;
+    color: #556;
+}
+
+.story-shell {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbf3 100%);
+    border: 1px solid rgba(46, 125, 50, 0.08);
+    border-radius: 28px;
+    padding: 1.25rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
+}
+
+.story-visual {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    min-height: 520px;
+    background: #e9f3e7;
+}
+
+.story-image {
+    width: 100%;
+    height: 520px;
+    object-fit: cover;
+    display: block;
+}
+
+.story-badge {
+    position: absolute;
+    left: 18px;
+    bottom: 18px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(8px);
+    border-radius: 18px;
+    padding: 0.95rem 1rem;
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.story-badge-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: #2e7d32;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.story-badge-text {
+    color: #1a1a1a;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.story-content {
+    padding: 0.5rem 0.5rem 0.5rem 1rem;
+}
+
+.story-content h3 {
+    color: #2e7d32;
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+
+.story-content p {
+    color: #334;
+    margin-bottom: 1rem;
+}
+
+.story-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.story-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.85rem;
+    border-radius: 999px;
+    background: #f1f8e9;
+    color: #2e7d32;
+    font-weight: 700;
+    font-size: 0.92rem;
+}
+
+.story-quote {
+    margin: 1.5rem 0 1.25rem;
+    padding: 1.15rem 1.2rem;
+    border-left: 4px solid #2e7d32;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+}
+
+.story-quote i {
+    color: #2e7d32;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.story-quote blockquote {
+    margin: 0;
+    font-style: italic;
+    color: #2f3b2f;
+    font-size: 1.05rem;
+}
+
+.story-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.story-stat {
+    background: #fff;
+    border: 1px solid rgba(46, 125, 50, 0.08);
+    border-radius: 18px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.story-stat strong {
+    display: block;
+    color: #2e7d32;
+    font-size: 1.4rem;
+    line-height: 1.1;
+}
+
+.story-stat span {
+    display: block;
+    color: #556;
+    font-size: 0.92rem;
+    margin-top: 0.35rem;
+}
+
+@media (max-width: 991px) {
+    .story-content {
+        padding: 0.25rem;
+    }
+
+    .story-visual,
+    .story-image {
+        min-height: 380px;
+        height: 380px;
+    }
+}
+
+@media (max-width: 576px) {
+    .story-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .story-badge {
+        left: 12px;
+        right: 12px;
+    }
+
+    .story-badge-number {
+        width: 56px;
+        height: 56px;
+        flex: 0 0 56px;
+    }
+}
+    </style>
 <?php include 'header.php'; ?>
     <main class="about-page">
         <!-- Hero Section -->
@@ -28,16 +221,16 @@
                                 for farmers across Uganda.
                             </p>
                             <div class="about-hero-actions">
-                                <a class="btn  btn-lg text-success" href="product.php#feeds">
+                                <a class="btn  btn-sm rounded-4 border border-2 border-success text-success" href="product.php#feeds">
                                     <i class="fas fa-seedling me-2"></i>Explore Our Products
-                                </a>
-                                <a class="btn  btn-lg" href="contact.php" style="color: #2e7d32;">
-                                    <i class="fas fa-phone me-2"></i>Contact Us
+</a>
+                                <a class="btn  btn-sm rounded-5 border border-2 border-success text-success" href="contact.php" style="color: #2e7d32;">
+                                   <i class="fas fa-phone me-2"></i>Contact Us 
                                 </a>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-6">
+                    <div class="col-lg-4">
                         <div class="about-hero-media">
                             <img src="./images/white hen.jpg" alt="Kalungu Quality Feeds - Supporting Farmers" class="img-fluid rounded-3 shadow w-100" style="object-fit: cover; height: 400px; margin-left: 200px;">
                         </div>
@@ -48,43 +241,81 @@
 
         <!-- Our Story Section -->
         <section class="our-story py-5">
-            <div class="container">
-                <h2 class="text-center mb-5" style="color: #2e7d32;">Our Story</h2>
-                <div class="row align-items-stretch g-4">
-                    <div class="col-lg-6">
-                        <div class="h-1000 d-flex align-items-center">
-                            <img src="./images/lydia.jpeg" alt="Our Journey" class="img-fluid rounded shadow w-800">
+             <div class="container">
+        <div class="section-heading text-center mb-5">
+            <span class="section-kicker">Our Story</span>
+            <h2>From a Small Feed Shop to a Trusted Farming Partner</h2>
+            <p>Built with local farmers, for local farmers.</p>
+        </div>
+
+        <div class="story-shell">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-5">
+                    <div class="story-visual">
+                        <img src="./images/lydia.jpeg" alt="Our Journey" class="img-fluid story-image">
+                        <div class="story-badge">
+                            <span class="story-badge-number">2014</span>
+                            <span class="story-badge-text">Founded in Kalungu</span>
                         </div>
                     </div>
-                    <div class="col-lg-6">
-                        <div class="h-500 d-flex flex-column justify-content-center">
-                            <h3 class="mb-3" style="color: #2e7d32;">How It All Began</h3>
-                            <p style="color: #333;">
-                                Founded in 2014 by passionate agricultural experts and local farmers, Kalungu Quality Feeds
-                                started with a mission: provide accessible, high-quality livestock nutrition to our community.
-                            </p>
-                            <p style="color: #333;">
-                                From a small feed distribution center on Kyakumpi Viira Road, we've grown into a comprehensive
-                                agricultural solutions provider, serving over 1,200 farmers across the region. Our success led us to expand, and we now operate two convenient branches to better serve our farming community.
-                            </p>
-                            <p style="color: #333;">
-                                Our first branch is located at Kyakumpi Viira Road, where it all began, and our second branch is situated along Kitovu Road, slightly opposite Rubbis Gas Station as you head towards Kitovu Cathedral. This dual-location strategy ensures easier access and faster service for farmers across different areas.
-                            </p>
-                            <p style="color: #333;">
-                                Today, we're a trusted partner offering premium feeds, healthy chicks, and the knowledge
-                                that transforms farming businesses.
-                            </p>
-                            <div class="mt-3 p-3" style="background-color: #fff; border-left: 4px; border-radius: 4px; height:min-content; width:fit-content">
-                                <i class="fas fa-quote-left fa-2x mb-3" style="color: #2e7d32;"></i>
-                                <blockquote class="blockquote mb-0">
-                                    <p class="mb-2" style="color: #333; font-style: italic;">"Our commitment to farmers goes beyond selling products – we're invested in their long-term success."</p>
-                                    <!-- <footer class="blockquote-footer" style="color: #2e7d32;">Founder's Vision</footer> -->
-                                </blockquote>
+                </div>
+
+                <div class="col-lg-7">
+                    <div class="story-content">
+                        <div class="story-meta">
+                            <div class="story-chip">
+                                <i class="fas fa-seedling"></i>
+                                Local roots
+                            </div>
+                            <div class="story-chip">
+                                <i class="fas fa-users"></i>
+                                Farmer-first service
+                            </div>
+                        </div>
+
+                        <h3>How It All Began</h3>
+                        <p>
+                            Founded in 2014 by passionate agricultural experts and local farmers, Kalungu Quality Feeds
+                            started with a mission: provide accessible, high-quality livestock nutrition to our community.
+                        </p>
+                        <p>
+                            From a small feed distribution center on Kyakumpi Viira Road, we have grown into a
+                            comprehensive agricultural solutions provider, serving over 1,200 farmers across the region.
+                            Our growth led to two branches so farmers can reach us faster and get support more easily.
+                        </p>
+                        <p>
+                            Our first branch remains at Kyakumpi Viira Road, where the journey began. Our second branch
+                            is along Kitovu Road, slightly opposite Rubbis Gas Station as you head toward Kitovu Cathedral.
+                            Together, these locations help us serve the community with better access and faster response.
+                        </p>
+
+                        <div class="story-quote">
+                            <i class="fas fa-quote-left"></i>
+                            <blockquote>
+                                Our commitment to farmers goes beyond selling products. We are invested in long-term success.
+                            </blockquote>
+                        </div>
+
+                        <div class="story-stats">
+                            <div class="story-stat">
+                                <strong>500+</strong>
+                                <span>Farmers served</span>
+                            </div>
+                            <div class="story-stat">
+                                <strong>2</strong>
+                                <span>Convenient branches</span>
+                            </div>
+                            <div class="story-stat">
+                                <strong>10+</strong>
+                                <span>Years of service</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+            
         </section>
 
         <!-- Why Choose Us -->
@@ -235,31 +466,13 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- <div class="col-md-4">
-                        <div class="mvv-card card border-0 shadow-sm h-100">
-                            <div class="card-body text-center">
-                                <div class="mvv-icon mb-3">
-                                    <i class="fas fa-heart fa-3x" style="color: #2e7d32;"></i>
-                                </div>
-                                <h4 style="color: #2e7d32;">Our Values</h4>
-                                <ul class="list-unstyled text-muted small">
-                                    <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: #2e7d32;"></i>Transparency</li>
-                                    <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: #2e7d32;"></i>Honesty</li>
-                                    <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: #2e7d32;"></i>Maintaining rigorous quality control measures throughout production and distribution.</li>
-                                    <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: #2e7d32;"></i>Prioritizing customer needs, provide excellent service and ensure timely delivery.</li>
-                                    <li><i class="fas fa-check-circle me-2" style="color: #2e7d32;"></i>Community Focus</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div> -->
                 </div>
             </div>
         </section>
 
         <!-- Timeline Section -->
-        <section class="about-timeline py-5" style="background-color: #f9fbe7;">
-            <div class="container">
+        <section class="about-timeline py-5"style="background-color: #f9fbe7;">
+            <div class="container text-center">
                 <h2 class="text-center mb-5" style="color: #2e7d32;">Our Journey & Support Process</h2>
                 <div class="timeline-container">
                     <div class="timeline-item">
@@ -299,13 +512,7 @@
             <div class="container">
                 <h2 class="text-center mb-5" style="color: #2e7d32;">Certifications & Quality Standards</h2>
                 <div class="row g-4">
-                    <!-- <div class="col-md-3 text-center">
-                        <div class="cert-card p-4 rounded shadow-sm h-100" style="background-color: #f9fbe7;">
-                            <i class="fas fa-award fa-3x  mb-3" style="color: #2e7d32;"></i>
-                            <h5 style="color: #2e7d32;">ISO Certified</h5>
-                            <p class="small" style="color: #333;">International quality management standards compliance</p>
-                        </div>
-                    </div> -->
+                    
                     <div class="col-md-3 text-center">
                         <div class="cert-card p-4 rounded shadow-sm h-100" style="background-color: #f9fbe7;">
                             <i class="fas fa-check-circle fa-3x mb-3" style="color: #2e7d32;"></i>
@@ -313,20 +520,7 @@
                             <p class="small" style="color: #333;">Uganda National Bureau of Standards certified products</p>
                         </div>
                     </div>
-                    <!-- <div class="col-md-3 text-center">
-                        <div class="cert-card p-4 rounded shadow-sm h-100" style="background-color: #f9fbe7;">
-                            <i class="fas fa-microscope fa-3x mb-3" style="color: #2e7d32;"></i>
-                            <h5 style="color: #2e7d32;">Lab Tested</h5>
-                            <p class="small" style="color: #333;">Regular nutritional analysis and quality control testing</p>
-                        </div>
-                    </div> -->
-                    <!-- <div class="col-md-3 text-center">
-                        <div class="cert-card p-4 rounded shadow-sm h-100" style="background-color: #f9fbe7;">
-                            <i class="fas fa-seedling fa-3x mb-3" style="color: #2e7d32;"></i>
-                            <h5 style="color: #2e7d32;">Organic Options</h5>
-                            <p class="small" style="color: #333;">Certified organic feed formulations available</p>
-                        </div>
-                    </div> -->
+                   
                 </div>
                 <div class="mt-5">
                     <h4 class="text-center mb-4" style="color: #2e7d32;">Our Quality Commitments</h4>

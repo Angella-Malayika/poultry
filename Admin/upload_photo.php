@@ -440,7 +440,6 @@ if ($recent_result) {
             </div>
             <div class="d-flex align-items-center gap-3">
                 <span class="text-muted">Welcome, <?php echo htmlspecialchars((string) ($_SESSION['username'] ?? 'Admin')); ?></span>
-                <a href="adlogout.php" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-left"></i> Logout</a>
             </div>
         </div>
 

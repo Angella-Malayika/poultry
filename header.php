@@ -34,7 +34,9 @@ if (session_status() === PHP_SESSION_NONE) {
                 echo '<a href="Admin/admin.php"><i class="fas fa-shield-alt"></i> Admin</a>';
                 echo '<a href="Admin/view_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a>';
             }
-            echo '<a href="logout.php"><i class="fas fa-right-from-bracket"></i> Logout</a>';
+            
+                echo '<a href=""><i class="fas fa-user"></i> ' . htmlspecialchars($_SESSION['username'] ?? 'Profile') . '</a>';
+            
         } else {
             echo '<a href="login.php">Login</a>';
         }

@@ -187,7 +187,6 @@ $status_labels = [
             <h5 class="mb-0"><i class="bi bi-cart3 me-2"></i>Order Management</h5>
             <div class="d-flex align-items-center gap-3">
                 <span class="text-muted">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
-                <a href="adlogout.php" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-left"></i> Logout</a>
             </div>
         </div>
 

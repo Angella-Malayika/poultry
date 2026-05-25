@@ -67,7 +67,7 @@ function resolve_product_key($raw_value, $product_options)
     return '';
 }
 
-$full_name_value = '';
+$user_name_value =  $_SESSION['username'] ?? '';
 $phone_value = '';
 $address_value = '';
 $delivery_date_value = '';
@@ -81,7 +81,7 @@ $order_item_inputs = [
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     include 'connection.php';
 
-    $full_name_value = trim((string) ($_POST['full_name'] ?? ''));
+    $user_name_value = trim((string) ($_POST['user_name'] ?? ''));
     $phone_value = trim((string) ($_POST['phone'] ?? ''));
     $address_value = trim((string) ($_POST['address'] ?? ''));
     $delivery_date_value = trim((string) ($_POST['delivery_date'] ?? ''));
@@ -159,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $order_item_inputs[] = ['product' => $prefill_product, 'quantity' => '1', 'unit' => $prefill_unit];
     }
 
-    if ($full_name_value === '' || $phone_value === '' || $address_value === '' || $delivery_date_value === '') {
+    if ($user_name_value === '' || $phone_value === '' || $address_value === '' || $delivery_date_value === '') {
         $message = '<div class="alert alert-danger">Please fill in all required fields.</div>';
     } elseif (!preg_match('/^\d{10}$/', $phone_value)) {
         $message = '<div class="alert alert-danger">Phone number must be exactly 10 digits.</div>';
@@ -281,9 +281,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                 <div class="row mb-4">
                                     <div class="col-md-6">
-                                        <h5 class="text-muted mb-2"><i class="fas fa-user"></i> Full Name</h5>
+                                        <h5 class="text-muted mb-2"><i class="fas fa-user"></i> User Name</h5>
                                         <p style="font-size: 1.1rem; font-weight: 300;">
-                                            <?php echo htmlspecialchars($order_details['full_name']); ?>
+                                            <?php echo htmlspecialchars($order_details['user_name']); ?>
                                         </p>
                                     </div>
                                     <div class="col-md-6">
@@ -352,9 +352,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <form id="order-form" method="POST" action="">
                             <!-- Full Name -->
                             <div class="form-group">
-                                <label for="full-name"><i class="fas fa-user me-2"></i>Full Name</label>
-                                <input type="text" id="full-name" name="full_name" placeholder="Enter your full name"
-                                    value="<?php echo htmlspecialchars($full_name_value); ?>"
+                                <label for="user-name"><i class="fas fa-user me-2"></i>User Name</label>
+                                <input type="text" id="user-name" name="user_name" placeholder="Enter your user name"
+                                    value="<?php echo htmlspecialchars($user_name_value); ?>"
                                     required pattern="[A-Za-z\s]+"
                                     title="Name must contain only letters and spaces">
                             </div>
@@ -431,7 +431,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <!-- Side Information -->
-                <div class="col-lg-1 ">
+                <div class="col-lg-4 padding-bottom=4px;"> 
                     <div class="info-box">
                         <h4><i class="fas fa-truck"></i>Fast Delivery</h4>
                         <p>We deliver within 24 hours to Kalungu and surrounding areas.</p>

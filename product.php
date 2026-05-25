@@ -59,6 +59,7 @@ function truncate_text($text, $length = 120)
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -216,6 +217,7 @@ function truncate_text($text, $length = 120)
 		}
 	</style>
 </head>
+
 <body>
 	<?php include 'header.php'; ?>
 
@@ -227,8 +229,9 @@ function truncate_text($text, $length = 120)
 						<span class="store-kicker"><i class="fa-solid fa-store"></i> Live store catalog</span>
 						<h1>Browse products and see new stock as it is added.</h1>
 						<p>
-							This page is the main product showcase for the store. It lists active products from the system,
-							highlights the most recent additions, and updates automatically whenever new items are added to the database.
+							Explore our full range of available products and lastest additions.
+							We keep this page updated in real time so you always shop our freshest stock.
+							Click on any product to see details and place your order.
 						</p>
 						<div class="d-flex flex-wrap gap-3 mt-4">
 							<a href="#new-products" class="btn btn-success btn-lg px-4">
@@ -274,8 +277,8 @@ function truncate_text($text, $length = 120)
 						<div class="col-lg-8">
 							<h2 class="section-title mb-2">Products update automatically</h2>
 							<p class="mb-0 section-copy">
-								Any new item saved in the products table will appear here without changing this page.
-								That makes it the central store catalog for customers to explore what's available now.
+								We continuosly update our stock so you never miss out on our newest products.
+								Check back often to see the latest additions to our store and find the perfect feed for your poultry.
 							</p>
 						</div>
 						<div class="col-lg-4 text-lg-end">
@@ -313,10 +316,13 @@ function truncate_text($text, $length = 120)
 												<i class="fa-solid fa-tag"></i>
 												<?php echo htmlspecialchars($product['category_title']); ?>
 											</span>
+											<?php if (strtotime($product['created_at']) >= strtotime('-2 months')): ?>
 											<span class="new-pill">
 												<i class="fa-solid fa-star"></i>
 												New
 											</span>
+											<?php endif; ?>
+											
 										</div>
 										<h3 class="h5 product-title"><?php echo htmlspecialchars($product['name']); ?></h3>
 										<p class="text-secondary mb-4"><?php echo htmlspecialchars(truncate_text($product['description'], 130)); ?></p>
@@ -371,7 +377,7 @@ function truncate_text($text, $length = 120)
 										<p class="text-secondary mb-4"><?php echo htmlspecialchars(truncate_text($product['description'], 110)); ?></p>
 										<div class="d-flex justify-content-between align-items-center mt-auto">
 											<a class="product-link" href="product-details.php?product=<?php echo urlencode($product['slug']); ?>">Details</a>
-											<small class="text-muted">#<?php echo str_pad((string) ($position + 1), 2, '0', STR_PAD_LEFT); ?></small>
+											<!-- <small class="text-muted"><?php echo str_pad((string)  '0', STR_PAD_LEFT); ?></small> -->
 										</div>
 									</div>
 								</div>
@@ -391,5 +397,5 @@ function truncate_text($text, $length = 120)
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
-</html>
 
+</html>

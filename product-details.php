@@ -145,7 +145,6 @@ $benefits = !empty($product['benefits']) ? explode('|', $product['benefits']) : 
 
                     <div class="detail-section">
                         <h3><i class="fas fa-warehouse me-2"></i>Storage Guidelines</h3>
-                        <p style="color: #333;"><?php echo htmlspecialchars($product['storage']); ?></p>
                     </div>
 
                     <!-- Additional Info -->

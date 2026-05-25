@@ -158,7 +158,6 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
             <h5 class="mb-0">Dashboard</h5>
             <div class="d-flex align-items-center gap-3">
                 <span class="text-muted">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
-                <a href="adlogout.php" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-left"></i> Logout</a>
             </div>
         </div>
 
@@ -210,14 +209,7 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
             <!-- Photos Section -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="mb-0"><i class="bi bi-images"></i> Poultry Photos</h4>
-                <div class="d-flex gap-2">
-                    <a href="gallery.php" class="btn btn-outline-success">
-                        <i class="bi bi-display"></i> User Gallery
-                    </a>
-                    <a href="upload_photo.php" class="btn ">
-                        <i class="bi bi-plus-circle"></i> Add Product
-                    </a>
-                </div>
+               
             </div>
 
             <div class="row g-3">
@@ -240,7 +232,7 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
                 <div class="col-12">
                     <div class="empty-state card shadow-sm">
                         <i class="bi bi-camera"></i>
-                        <h5>No photos yet</h5>
+                        </h5>
                         <p>Upload your first poultry photo to get started.</p>
                         <a href="upload_photo.php" class="btn btn-success"><i class="bi bi-plus-circle"></i> Add Product</a>
                     </div>
