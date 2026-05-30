@@ -191,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES (?, ?, ?, ?, ?, ?, ?)");
 
         if ($stmt) {
-            $stmt->bind_param('isssdss', $user_id, $full_name_value, $phone_value, $product_summary, $total_quantity_value, $address_value, $delivery_date_value);
+            $stmt->bind_param('isssdss', $user_id, $user_name_value, $phone_value, $product_summary, $total_quantity_value, $address_value, $delivery_date_value);
             if ($stmt->execute()) {
                 $order_placed = true;
                 $order_id = mysqli_insert_id($conn);
