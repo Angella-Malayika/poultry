@@ -7,11 +7,12 @@ $db_name = "Poultry";
 $port = 3306;
 
 // If running on your InfinityFree host, switch to those credentials
-if (isset($_SERVER['HTTP_HOST']) && (strpos($_SERVER['HTTP_HOST'], 'fwh.is') !== false || strpos($_SERVER['HTTP_HOST'], 'infinityfree') !== false)) {
-    $servername = 'sql305.infinityfree.com';
-    $username = 'if0_42026595';
-    $password = 'malayika5825';
-    $db_name = 'if0_42026595_poultry';
+if (isset($_SERVER['HTTP_HOST']) && (strpos($_SERVER['HTTP_HOST'], 'howto.rocks') !== false || strpos($_SERVER['HTTP_HOST'], 'infinityfree') !== false)) {
+    // $servername = 'sql305.infinityfree.com'; 
+    $servername = 'sql304.infinityfree.com';
+    $username = 'if0_42080277';
+    $password = 'log80ang';
+    $db_name = 'if0_42080277_poultry';
     $port = 3306;
 }
 

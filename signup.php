@@ -124,6 +124,28 @@ if (isset($_POST['signup'])) {
             padding-bottom: 8px;
             padding-bottom: 20px;
         }
+
+        .register-logo {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 12px;
+        }
+
+        .register-logo .logo-name {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            line-height: 1.1;
+        }
+
+        .register-logo .logo-subtitle {
+            font-weight: 600;
+            font-size: 0.72rem;
+            color: var(--text-color);
+        }
         .register-header i {
             font-size: 50px;
             color: var(--primary-color);
@@ -202,7 +224,11 @@ if (isset($_POST['signup'])) {
 <body>
     <div class="register-container">
         <div class="register-header">
-            <i class="fas fa-user-plus"></i>
+            <div class="register-logo" aria-label="Kalungu Quality Feeds">
+                <span class="logo-name">Kalungu</span>
+                <span class="logo-subtitle">Quality Feeds</span>
+            </div>
+            <!-- <i class="fas fa-user-plus"></i> -->
             <h2>Create Account</h2>
             <p class="text-muted">Sign up to get started</p>
         </div>

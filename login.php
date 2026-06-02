@@ -131,9 +131,20 @@ if (isset($_POST['login'])) {
             --input-border: #2e7d32;
         }
 
+        html, body {
+            height: 100%;
+        }
+
         body {
             background: linear-gradient(135deg, var(--light-bg) 0%, var(--light-bg) 100%);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        .login-wrapper {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -154,6 +165,28 @@ if (isset($_POST['login'])) {
             margin-bottom: 30px;
             border-bottom: 3px solid var(--primary-color);
             padding-bottom: 20px;
+        }
+
+        .login-logo {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 12px;
+        }
+
+        .login-logo .logo-name {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            line-height: 1.1;
+        }
+
+        .login-logo .logo-subtitle {
+            font-weight: 600;
+            font-size: 0.72rem;
+            color: var(--text-color);
         }
 
         .login-header h2 {
@@ -233,46 +266,56 @@ if (isset($_POST['login'])) {
         .text-center a { color: var(--primary-color); text-decoration: none; font-weight: bold; }
         .text-center a:hover { color: #1b5e20; text-decoration: underline; }
         .back-link { color: var(--text-color) !important; display: inline-block; margin-top: 10px; }
+
+        #footer {
+            margin-top: auto;
+        }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-header">
-            <h2>Sign into your account</h2>
-        </div>
-        
-        <?php if (!empty($message)) echo $message; ?>
-        
-        <form method="POST" action="">
-            <div class="mb-3">
-                <label for="email" class="form-label"><i class="fas fa-envelope"></i> Email</label>
-                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
-            </div>
-            
-            <div class="mb-3">
-                <label for="password" class="form-label"><i class="fas fa-lock"></i> Password</label>
-                <div class="password-group">
-                    <input type="password" class="form-control password-input" id="password" name="password" placeholder="Enter your password" required>
-                    <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password" aria-pressed="false">
-                        <i class="fas fa-eye"></i>
-                    </button>
+    <main class="login-wrapper">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="login-logo" aria-label="Kalungu Quality Feeds">
+                    <span class="logo-name">Kalungu</span>
+                    <span class="logo-subtitle">Quality Feeds</span>
                 </div>
+                <h2>Sign into your account</h2>
             </div>
-            
-            <button type="submit" name="login" class="btn btn-login">
-                <i class="fas fa-sign-in-alt"></i> SignIn
-            </button>
-        </form>
 
-        <!-- <div class="alert alert-info mt-3 small">
-            <strong>Demo admin:</strong> admin@kalungufeeds.com / Admin@123
-        </div> -->
-        
-        <div class="text-center">
-            <p>Don't have an account? <a href="signup.php">Sign up here</a></p>
-            <a href="index.php" class="back-link"><i class="fas fa-home"></i> Back to Home</a>
+            <?php if (!empty($message)) echo $message; ?>
+
+            <form method="POST" action="">
+                <div class="mb-3">
+                    <label for="email" class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label"><i class="fas fa-lock"></i> Password</label>
+                    <div class="password-group">
+                        <input type="password" class="form-control password-input" id="password" name="password" placeholder="Enter your password" required>
+                        <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password" aria-pressed="false">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" name="login" class="btn btn-login">
+                    <i class="fas fa-sign-in-alt"></i> SignIn
+                </button>
+            </form>
+
+            <!-- <div class="alert alert-info mt-3 small">
+                <strong>Demo admin:</strong> admin@kalungufeeds.com / Admin@123
+            </div> -->
+
+            <div class="text-center">
+                <p>Don't have an account? <a href="signup.php">Sign up here</a></p>
+                <a href="index.php" class="back-link"><i class="fas fa-home"></i> Back to Home</a>
+            </div>
         </div>
-    </div>
+    </main>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -293,5 +336,6 @@ if (isset($_POST['login'])) {
             });
         }
     </script>
+    <?php include 'footer.php'; ?>
 </body>
 </html>
