@@ -33,6 +33,7 @@
           <li><a href="product.php">Products</a></li>
           <li><a href="about.php">About Us</a></li>
           <li><a href="contact.php">Contact</a></li>
+          <li><a href="complaints.php">Feedback</a></li>
         </ul>
       </div>
 

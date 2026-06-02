@@ -24,7 +24,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
     $new_status = strtolower(trim((string) $_POST['status']));
     $new_status = $status_aliases[$new_status] ?? $new_status;
 
-    if (in_array($new_status, $allowed_statuses, true)) {
+    $can_update = true;
+    $current_stmt = $conn->prepare('SELECT status FROM orders WHERE id = ?');
+    if ($current_stmt) {
+        $current_stmt->bind_param('i', $order_id);
+        $current_stmt->execute();
+        $current_result = $current_stmt->get_result();
+        $current_row = $current_result ? $current_result->fetch_assoc() : null;
+        $current_stmt->close();
+
+        $current_status_raw = strtolower(trim((string) ($current_row['status'] ?? 'pending')));
+        $current_status_guard = $status_aliases[$current_status_raw] ?? $current_status_raw;
+
+        if ($current_status_guard === 'delivered') {
+            $message = 'Delivered orders cannot be modified.';
+            $message_type = 'danger';
+            $can_update = false;
+        }
+    } else {
+        $message = 'Could not verify current order status.';
+        $message_type = 'danger';
+        $can_update = false;
+    }
+
+    if ($can_update && in_array($new_status, $allowed_statuses, true)) {
         $update_stmt = $conn->prepare('UPDATE orders SET status = ? WHERE id = ?');
         if ($update_stmt) {
             $update_stmt->bind_param('si', $new_status, $order_id);
@@ -41,8 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
             $message_type = 'danger';
         }
     } else {
-        $message = 'Invalid status selected.';
-        $message_type = 'danger';
+            if ($can_update) {
+                $message = 'Invalid status selected.';
+                $message_type = 'danger';
+            }
     }
 }
 
@@ -113,6 +138,7 @@ if ($delivery_date !== '') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -124,12 +150,14 @@ if ($delivery_date !== '') {
             background-color: #f8f9fa;
             padding: 20px;
         }
+
         .detail-container {
             background: #ffffff;
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
+
         .info-card {
             background: #ffffff;
             border: 1px solid #e8ecef;
@@ -138,21 +166,25 @@ if ($delivery_date !== '') {
             border-radius: 10px;
             margin-bottom: 20px;
         }
+
         .info-card h5 {
             margin-bottom: 20px;
             font-weight: 700;
             color: #0f3c2a;
         }
+
         .info-row {
             margin-bottom: 15px;
             padding-bottom: 15px;
             border-bottom: 1px solid #eef2f4;
         }
+
         .info-row:last-child {
             border-bottom: none;
             margin-bottom: 0;
             padding-bottom: 0;
         }
+
         .info-label {
             font-size: 0.8rem;
             color: #6c757d;
@@ -160,12 +192,14 @@ if ($delivery_date !== '') {
             font-weight: 700;
             letter-spacing: 0.4px;
         }
+
         .info-value {
             font-size: 1.05rem;
             font-weight: 500;
             margin-top: 4px;
             color: #1d2a22;
         }
+
         .status-section {
             background: #f8f9fa;
             border: 1px solid #e8ecef;
@@ -173,17 +207,20 @@ if ($delivery_date !== '') {
             border-radius: 10px;
             margin-bottom: 20px;
         }
+
         .status-badge {
             font-size: 1rem;
             padding: 10px 18px;
             border-radius: 999px;
         }
+
         .action-buttons {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-top: 20px;
         }
+
         .quick-actions {
             display: flex;
             flex-wrap: wrap;
@@ -191,6 +228,7 @@ if ($delivery_date !== '') {
         }
     </style>
 </head>
+
 <body>
     <div class="detail-container">
         <div class="mb-4">
@@ -284,36 +322,42 @@ if ($delivery_date !== '') {
                 <?php echo htmlspecialchars($status_labels[$current_status] ?? ucfirst($current_status)); ?>
             </span>
 
-            <div class="quick-actions mt-3">
-                <?php if ($current_status === 'pending'): ?>
-                    <form method="POST" class="m-0">
-                        <input type="hidden" name="status" value="approved">
-                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-thumbs-up me-1"></i>Approve Order</button>
-                    </form>
-                <?php endif; ?>
+            <?php if ($current_status !== 'delivered'): ?>
+                <div class="quick-actions mt-3">
+                    <?php if ($current_status === 'pending'): ?>
+                        <form method="POST" class="m-0">
+                            <input type="hidden" name="status" value="approved">
+                            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-thumbs-up me-1"></i>Approve Order</button>
+                        </form>
+                    <?php endif; ?>
 
-                <?php if ($current_status === 'approved'): ?>
-                    <form method="POST" class="m-0">
-                        <input type="hidden" name="status" value="delivered">
-                        <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check-circle me-1"></i>Mark Delivered</button>
-                    </form>
-                <?php endif; ?>
+                    <?php if ($current_status === 'approved'): ?>
+                        <form method="POST" class="m-0">
+                            <input type="hidden" name="status" value="delivered">
+                            <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check-circle me-1"></i>Mark Delivered</button>
+                        </form>
+                    <?php endif; ?>
 
-                <?php if (in_array($current_status, ['pending', 'approved'], true)): ?>
-                    <form method="POST" class="m-0" onsubmit="return confirm('Cancel this order?');">
-                        <input type="hidden" name="status" value="cancelled">
-                        <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-times-circle me-1"></i>Cancel</button>
-                    </form>
-                <?php endif; ?>
-            </div>
+                    <?php if (in_array($current_status, ['pending', 'approved'], true)): ?>
+                        <form method="POST" class="m-0" onsubmit="return confirm('Cancel this order?');">
+                            <input type="hidden" name="status" value="cancelled">
+                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-times-circle me-1"></i>Cancel</button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
 
             <form method="POST" class="row g-2 align-items-center mt-4">
                 <div class="col-sm-6 col-md-4">
                     <select name="status" class="form-select">
-                        <option value="pending" <?php echo $current_status === 'pending' ? 'selected' : ''; ?>>New</option>
-                        <option value="approved" <?php echo $current_status === 'approved' ? 'selected' : ''; ?>>Approved</option>
-                        <option value="delivered" <?php echo $current_status === 'delivered' ? 'selected' : ''; ?>>Delivered</option>
-                        <option value="cancelled" <?php echo $current_status === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
+                        <?php if ($current_status === 'delivered'): ?>
+                            <option value="delivered" selected>Delivered</option>
+                        <?php else: ?>
+                            <option value="pending" <?php echo $current_status === 'pending' ? 'selected' : ''; ?>>New</option>
+                            <option value="approved" <?php echo $current_status === 'approved' ? 'selected' : ''; ?>>Approved</option>
+                            <option value="delivered" <?php echo $current_status === 'delivered' ? 'selected' : ''; ?>>Delivered</option>
+                            <option value="cancelled" <?php echo $current_status === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
+                        <?php endif; ?>
                     </select>
                 </div>
                 <div class="col-auto">
@@ -336,5 +380,6 @@ if ($delivery_date !== '') {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
 <?php mysqli_close($conn); ?>

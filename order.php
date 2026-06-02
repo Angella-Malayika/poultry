@@ -1,21 +1,24 @@
 <?php
 require_once 'auth_required.php';
+include 'connection.php';
 $message = '';
 $order_placed = false;
 $order_details = [];
 
-$product_options = [
-    'soya' => 'Soya',
-    'grower' => 'Grower Mash',
-    'layer' => 'Layer Mash',
-    'broiler' => 'Broiler Feed',
-    'chicks' => 'One-Day-Old Chicks',
-    'pellets' => 'Pellets',
-    'feed-additives' => 'Feed Additives',
-    'feed-concentrates' => 'Feed Concentrates',
-    'chicken-drinkers' => 'Chicken Drinkers',
-    'brooder-heater' => 'Brooder Heater',
-];
+$product_options = [];
+$product_result = mysqli_query(
+    $conn,
+    "SELECT slug, name FROM products WHERE is_active = 1 ORDER BY name ASC"
+);
+if ($product_result) {
+    while ($row = mysqli_fetch_assoc($product_result)) {
+        $slug = (string) ($row['slug'] ?? '');
+        $name = (string) ($row['name'] ?? '');
+        if ($slug !== '') {
+            $product_options[$slug] = $name !== '' ? $name : $slug;
+        }
+    }
+}
 
 $unit_options = [
     'kg' => 'Kg',
@@ -24,12 +27,22 @@ $unit_options = [
     'trays' => 'Trays',
 ];
 
-function default_unit_for_product($product_key)
+function product_is_piece_unit(string $product_key, string $product_label): bool
 {
-    if (in_array($product_key, ['chicks', 'chicken-drinkers', 'brooder-heater'], true)) {
-        return 'pieces';
+    $value = strtolower(trim($product_key . ' ' . $product_label));
+    $piece_keywords = ['chicks', 'chick', 'drinker', 'brooder', 'heater', 'tray', 'egg'];
+    foreach ($piece_keywords as $keyword) {
+        if (strpos($value, $keyword) !== false) {
+            return true;
+        }
     }
-    return 'kg';
+    return false;
+}
+
+function default_unit_for_product(string $product_key, array $product_options): string
+{
+    $label = (string) ($product_options[$product_key] ?? '');
+    return product_is_piece_unit($product_key, $label) ? 'pieces' : 'kg';
 }
 
 function format_quantity_value($value)
@@ -51,19 +64,6 @@ function resolve_product_key($raw_value, $product_options)
         }
     }
 
-    if (strpos($normalized, 'chick') !== false) {
-        return 'chicks';
-    }
-    if (strpos($normalized, 'broiler') !== false) {
-        return 'broiler';
-    }
-    if (strpos($normalized, 'layer') !== false) {
-        return 'layer';
-    }
-    if (strpos($normalized, 'soya') !== false) {
-        return 'soya';
-    }
-
     return '';
 }
 
@@ -73,13 +73,12 @@ $address_value = '';
 $delivery_date_value = '';
 
 $prefill_product = isset($_GET['product']) ? resolve_product_key($_GET['product'], $product_options) : '';
-$prefill_unit = default_unit_for_product($prefill_product);
+$prefill_unit = default_unit_for_product($prefill_product, $product_options);
 $order_item_inputs = [
     ['product' => $prefill_product, 'quantity' => '1', 'unit' => $prefill_unit],
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    include 'connection.php';
 
     $user_name_value = trim((string) ($_POST['user_name'] ?? ''));
     $phone_value = trim((string) ($_POST['phone'] ?? ''));
@@ -111,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $item_quantity = round((float) $item_quantity_raw, 2);
         $unit_key = isset($selected_units[$index]) ? trim((string) $selected_units[$index]) : '';
         if (!isset($unit_options[$unit_key])) {
-            $unit_key = default_unit_for_product($product_key);
+            $unit_key = default_unit_for_product($product_key, $product_options);
         }
 
         if ($product_key === '' && $item_quantity <= 0) {
@@ -200,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $fetch_result = mysqli_query($conn, $fetch_sql);
                 if ($fetch_result && mysqli_num_rows($fetch_result) > 0) {
                     $order_details = mysqli_fetch_assoc($fetch_result);
-                    
+
                     // Send order confirmation email
                     require_once 'email_config.php';
                     sendOrderConfirmationEmail($order_details);
@@ -217,6 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -227,8 +227,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <style>
     </style>
 </head>
+
 <body>
-<?php include 'header.php'; ?>    
+    <?php include 'header.php'; ?>
     <!-- Order Hero Section -->
     <section class="order-hero">
         <div class="container">
@@ -283,7 +284,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <div class="col-md-6">
                                         <h5 class="text-muted mb-2"><i class="fas fa-user"></i> User Name</h5>
                                         <p style="font-size: 1.1rem; font-weight: 300;">
-                                            <?php echo htmlspecialchars($order_details['user_name']); ?>
+                                            <?php echo htmlspecialchars($order_details['full_name']); ?>
                                         </p>
                                     </div>
                                     <div class="col-md-6">
@@ -311,13 +312,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                 <div class="row mb-4">
                                     <div class="col-md-6">
-                                            <h5 class="text-muted mb-2"><i class="fas fa-cube"></i> Products</h5>
+                                        <h5 class="text-muted mb-2"><i class="fas fa-cube"></i> Products</h5>
                                         <p style="font-size: 1.1rem; font-weight: 300;">
                                             <?php echo htmlspecialchars($order_details['product']); ?>
                                         </p>
                                     </div>
                                     <div class="col-md-6">
-                                            <h5 class="text-muted mb-2"><i class="fas fa-boxes"></i> Total Quantity</h5>
+                                        <h5 class="text-muted mb-2"><i class="fas fa-boxes"></i> Total Quantity</h5>
                                         <p style="font-size: 1.1rem; font-weight: 300;">
                                             <?php echo htmlspecialchars(format_quantity_value((float) $order_details['quantity'])); ?>
                                         </p>
@@ -348,90 +349,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <section class="order-section">
                             <h2><i class="fas fa-list me-2"></i>Order Details</h2>
                             <?php echo $message; ?>
-                        
-                        <form id="order-form" method="POST" action="">
-                            <!-- Full Name -->
-                            <div class="form-group">
-                                <label for="user-name"><i class="fas fa-user me-2"></i>User Name</label>
-                                <input type="text" id="user-name" name="user_name" placeholder="Enter your user name"
-                                    value="<?php echo htmlspecialchars($user_name_value); ?>"
-                                    required pattern="[A-Za-z\s]+"
-                                    title="Name must contain only letters and spaces">
-                            </div>
 
-                            <!-- Phone Number -->
-                            <div class="form-group">
-                                <label for="phone"><i class="fas fa-phone me-2"></i>Phone Number</label>
-                                <input type="tel" id="phone" name="phone" placeholder="Enter your phone number"
-                                    value="<?php echo htmlspecialchars($phone_value); ?>"
-                                    required pattern="[0-9]{10}" minlength="10" maxlength="10" inputmode="numeric"
-                                    title="Phone number must be exactly 10 digits">
-                            </div>
-
-                            <!-- Select Products -->
-                            <div class="form-group">
-                                <label><i class="fas fa-cube me-2"></i>Select Products</label>
-                                <div id="product-rows">
-                                    <?php foreach ($order_item_inputs as $item): ?>
-                                        <div class="row g-2 align-items-end product-row mb-2">
-                                            <div class="col-md-5">
-                                                <select name="products[]" class="form-control" required>
-                                                    <option value="">-- Choose a Product --</option>
-                                                    <?php foreach ($product_options as $product_key => $product_label): ?>
-                                                        <option value="<?php echo htmlspecialchars($product_key); ?>" <?php echo (($item['product'] ?? '') === $product_key) ? 'selected' : ''; ?>>
-                                                            <?php echo htmlspecialchars($product_label); ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <input type="number" name="quantities[]" class="form-control" placeholder="Quantity" min="1" step="0.5" value="<?php echo htmlspecialchars((string) ($item['quantity'] ?? '1')); ?>" required>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <select name="units[]" class="form-control" required>
-                                                    <?php foreach ($unit_options as $unit_key => $unit_label): ?>
-                                                        <option value="<?php echo htmlspecialchars($unit_key); ?>" <?php echo (($item['unit'] ?? 'kg') === $unit_key) ? 'selected' : ''; ?>>
-                                                            <?php echo htmlspecialchars($unit_label); ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-1">
-                                                <button type="button" class="btn btn-outline-danger btn-sm remove-product-row" title="Remove row">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
+                            <form id="order-form" method="POST" action="">
+                                <!-- Full Name -->
+                                <div class="form-group">
+                                    <label for="user-name"><i class="fas fa-user me-2"></i>User Name</label>
+                                    <input type="text" id="user-name" name="user_name" placeholder="Enter your user name"
+                                        value="<?php echo htmlspecialchars($user_name_value); ?>"
+                                        required pattern="[A-Za-z\s]+"
+                                        title="Name must contain only letters and spaces">
                                 </div>
-                                <button type="button" id="add-product-row" class="btn btn-outline-success btn-sm mt-2">
-                                    <i class="fas fa-plus me-1"></i>Add Another Product
-                                </button>
-                                <small class="text-muted d-block mt-2">For feeds sold in Kg, you can enter decimals (example: 2.5 Kg).</small>
-                            </div>
 
-                            <!-- Delivery Address -->
-                            <div class="form-group">
-                                <label for="address"><i class="fas fa-map-marker-alt me-2"></i>Delivery Address</label>
-                                <textarea name="address" id="address" placeholder="Enter your delivery address in detail" required><?php echo htmlspecialchars($address_value); ?></textarea>
-                            </div>
+                                <!-- Phone Number -->
+                                <div class="form-group">
+                                    <label for="phone"><i class="fas fa-phone me-2"></i>Phone Number</label>
+                                    <input type="tel" id="phone" name="phone" placeholder="Enter your phone number"
+                                        value="<?php echo htmlspecialchars($phone_value); ?>"
+                                        required pattern="[0-9]{10,15}" minlength="10" maxlength="15" inputmode="numeric"
+                                        title="Phone number must be between 10-15 digits">
+                                </div>
 
-                            <!-- Preferred Delivery Date -->
-                            <div class="form-group">
-                                <label for="delivery-date"><i class="fas fa-calendar me-2"></i>Preferred Delivery Date</label>
-                                <input type="date" id="delivery-date" name="delivery_date" value="<?php echo htmlspecialchars($delivery_date_value); ?>"
-                                min="<?php echo date('Y-m-d'); ?>" required>
-                            </div>
+                                <!-- Select Products -->
+                                <div class="form-group">
+                                    <label><i class="fas fa-cube me-2"></i>Select Products</label>
+                                    <div id="product-rows">
+                                        <?php foreach ($order_item_inputs as $item): ?>
+                                            <div class="row g-2 align-items-end product-row mb-2">
+                                                <div class="col-md-5">
+                                                    <select name="products[]" class="form-control" required>
+                                                        <option value="">-- Choose a Product --</option>
+                                                        <?php foreach ($product_options as $product_key => $product_label): ?>
+                                                            <?php $default_unit = product_is_piece_unit($product_key, $product_label) ? 'pieces' : 'kg'; ?>
+                                                            <option value="<?php echo htmlspecialchars($product_key); ?>"
+                                                                data-unit="<?php echo htmlspecialchars($default_unit); ?>"
+                                                                <?php echo (($item['product'] ?? '') === $product_key) ? 'selected' : ''; ?>>
+                                                                <?php echo htmlspecialchars($product_label); ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="number" name="quantities[]" class="form-control" placeholder="Quantity" min="1" step="0.5" value="<?php echo htmlspecialchars((string) ($item['quantity'] ?? '1')); ?>" required>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <select name="units[]" class="form-control" required>
+                                                        <?php foreach ($unit_options as $unit_key => $unit_label): ?>
+                                                            <option value="<?php echo htmlspecialchars($unit_key); ?>" <?php echo (($item['unit'] ?? 'kg') === $unit_key) ? 'selected' : ''; ?>>
+                                                                <?php echo htmlspecialchars($unit_label); ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <button type="button" class="btn btn-outline-danger btn-sm remove-product-row" title="Remove row">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <button type="button" id="add-product-row" class="btn btn-outline-success btn-sm mt-2">
+                                        <i class="fas fa-plus me-1"></i>Add Another Product
+                                    </button>
+                                    <small class="text-muted d-block mt-2">For feeds sold in Kg, you can enter decimals (example: 2.5 Kg).</small>
+                                </div>
 
-                            <!-- Submit Button -->
-                            <button type="submit"><i class="fas fa-check me-2"></i>Submit Order</button>
-                        </form>
-                    </section>
+                                <!-- Delivery Address -->
+                                <div class="form-group">
+                                    <label for="address"><i class="fas fa-map-marker-alt me-2"></i>Delivery Address</label>
+                                    <textarea name="address" id="address" placeholder="Enter your delivery address in detail" required><?php echo htmlspecialchars($address_value); ?></textarea>
+                                </div>
+
+                                <!-- Preferred Delivery Date -->
+                                <div class="form-group">
+                                    <label for="delivery-date"><i class="fas fa-calendar me-2"></i>Preferred Delivery Date</label>
+                                    <input type="date" id="delivery-date" name="delivery_date" value="<?php echo htmlspecialchars($delivery_date_value); ?>"
+                                        min="<?php echo date('Y-m-d'); ?>" required>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <button type="submit"><i class="fas fa-check me-2"></i>Submit Order</button>
+                            </form>
+                        </section>
                     <?php endif; ?>
                 </div>
 
                 <!-- Side Information -->
-                <div class="col-lg-4 padding-bottom=4px;"> 
+                <div class="col-lg-4 padding-bottom=4px;">
                     <div class="info-box">
                         <h4><i class="fas fa-truck"></i>Fast Delivery</h4>
                         <p>We deliver within 24 hours to Kalungu and surrounding areas.</p>
@@ -550,12 +554,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     return;
                 }
 
-                const productKey = productSelect.value;
-                if (['chicks', 'chicken-drinkers', 'brooder-heater'].includes(productKey)) {
-                    unitSelect.value = 'pieces';
-                } else {
-                    unitSelect.value = 'kg';
-                }
+                const selectedOption = productSelect.options[productSelect.selectedIndex];
+                const unitDefault = selectedOption ? selectedOption.dataset.unit : 'kg';
+                unitSelect.value = unitDefault || 'kg';
 
                 applyQtyRules(row);
             });
@@ -581,8 +582,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             updateRemoveButtons();
         }
     </script>
-    
+
     <?php include  'footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
+
 </html>

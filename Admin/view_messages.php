@@ -203,6 +203,8 @@ $unread_count = count(array_filter($messages, static function ($message) {
             <a class="nav-link" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
             <a class="nav-link" href="view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
             <a class="nav-link active" href="view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
+            <a class="nav-link" href="view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
+            <a class="nav-link" href="login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
             <a class="nav-link text-danger mt-3" href="adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
         </nav>
     </div>

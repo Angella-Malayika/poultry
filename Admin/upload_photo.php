@@ -13,6 +13,10 @@ $message = '';
 $message_type = 'success';
 $categories = [];
 $recent_products = [];
+$products = [];
+$edit_product_id = 0;
+$is_editing = false;
+$current_product_image = '';
 $form = [
     'category_id' => '',
     'name' => '',
@@ -73,124 +77,282 @@ if ($categories_result) {
     }
 }
 
+if (isset($_GET['edit'])) {
+    $edit_product_id = (int) $_GET['edit'];
+    if ($edit_product_id > 0) {
+        $stmt = $conn->prepare('SELECT * FROM products WHERE id = ? LIMIT 1');
+        if ($stmt) {
+            $stmt->bind_param('i', $edit_product_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result && $result->num_rows > 0) {
+                $product_row = $result->fetch_assoc();
+                $is_editing = true;
+                $current_product_image = (string) ($product_row['image'] ?? '');
+                $form['category_id'] = (string) ($product_row['category_id'] ?? '');
+                $form['name'] = (string) ($product_row['name'] ?? '');
+                $form['slug'] = (string) ($product_row['slug'] ?? '');
+                $form['description'] = (string) ($product_row['description'] ?? '');
+                $form['benefits'] = (string) ($product_row['benefits'] ?? '');
+                $form['usage_info'] = (string) ($product_row['usage_info'] ?? '');
+                $form['packaging'] = (string) ($product_row['packaging'] ?? '');
+                $form['storage'] = (string) ($product_row['storage'] ?? '');
+                $form['sort_order'] = (string) ($product_row['sort_order'] ?? '0');
+                $form['is_active'] = ((int) ($product_row['is_active'] ?? 0) === 1) ? '1' : '0';
+            }
+            $stmt->close();
+        }
+    }
+}
+
 if (!empty($_GET['success'])) {
-    $message = 'Product added successfully. It is now visible on the customer product pages.';
+    $is_update_notice = isset($_GET['updated']) && $_GET['updated'] === '1';
+    $message = $is_update_notice
+        ? 'Product updated successfully. Changes are live on the customer pages.'
+        : 'Product added successfully. It is now visible on the customer product pages.';
     $message_type = 'success';
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    foreach ($form as $key => $value) {
-        if (isset($_POST[$key])) {
-            $form[$key] = trim((string) $_POST[$key]);
-        }
-    }
+    $action = strtolower(trim((string) ($_POST['product_action'] ?? 'create')));
 
-    $form['is_active'] = isset($_POST['is_active']) ? '1' : '0';
-    $form['sort_order'] = (string) max(0, (int) ($form['sort_order'] !== '' ? $form['sort_order'] : '0'));
+    if ($action === 'delete') {
+        $product_id = (int) ($_POST['product_id'] ?? 0);
+        if ($product_id > 0) {
+            $stmt = $conn->prepare('SELECT image FROM products WHERE id = ? LIMIT 1');
+            if ($stmt) {
+                $stmt->bind_param('i', $product_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $row = $result ? $result->fetch_assoc() : null;
+                $stmt->close();
 
-    $category_id = (int) $form['category_id'];
-    $name = trim($form['name']);
-    $description = trim($form['description']);
-    $slug_input = trim($form['slug']);
-
-    if ($category_id <= 0) {
-        $message = 'Please choose a product category.';
-        $message_type = 'danger';
-    } elseif ($name === '') {
-        $message = 'Please enter the product name.';
-        $message_type = 'danger';
-    } elseif ($description === '') {
-        $message = 'Please enter a short product description.';
-        $message_type = 'danger';
-    } elseif (!isset($_FILES['image']) || !is_uploaded_file($_FILES['image']['tmp_name'])) {
-        $message = 'Please choose a product image.';
-        $message_type = 'danger';
-    } else {
-        $allowed_types = [
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/gif' => 'gif',
-            'image/webp' => 'webp',
-        ];
-
-        $tmp_name = $_FILES['image']['tmp_name'];
-        $file_size = (int) ($_FILES['image']['size'] ?? 0);
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $file_type = $finfo ? finfo_file($finfo, $tmp_name) : '';
-
-        if ($finfo) {
-            finfo_close($finfo);
-        }
-
-        if (!isset($allowed_types[$file_type])) {
-            $message = 'Only JPG, PNG, GIF, and WEBP images are allowed.';
+                $delete_stmt = $conn->prepare('DELETE FROM products WHERE id = ?');
+                if ($delete_stmt) {
+                    $delete_stmt->bind_param('i', $product_id);
+                    if ($delete_stmt->execute()) {
+                        $image_path = (string) ($row['image'] ?? '');
+                        if ($image_path !== '') {
+                            $file_path = __DIR__ . '/../' . ltrim($image_path, '/');
+                            if (is_file($file_path)) {
+                                @unlink($file_path);
+                            }
+                        }
+                        $message = 'Product deleted successfully.';
+                        $message_type = 'success';
+                    } else {
+                        $message = 'Failed to delete the product.';
+                        $message_type = 'danger';
+                    }
+                    $delete_stmt->close();
+                }
+            }
+        } else {
+            $message = 'Invalid delete request.';
             $message_type = 'danger';
-        } elseif ($file_size <= 0 || $file_size > 5 * 1024 * 1024) {
-            $message = 'Image is too large. Maximum file size is 5MB.';
+        }
+    } else {
+        foreach ($form as $key => $value) {
+            if (isset($_POST[$key])) {
+                $form[$key] = trim((string) $_POST[$key]);
+            }
+        }
+
+        $form['is_active'] = isset($_POST['is_active']) ? '1' : '0';
+        $form['sort_order'] = (string) max(0, (int) ($form['sort_order'] !== '' ? $form['sort_order'] : '0'));
+
+        $category_id = (int) $form['category_id'];
+        $name = trim($form['name']);
+        $description = trim($form['description']);
+        $slug_input = trim($form['slug']);
+        $product_id = (int) ($_POST['product_id'] ?? 0);
+        $is_update = ($action === 'update' && $product_id > 0);
+        $current_record = null;
+
+        if ($is_update) {
+            $stmt = $conn->prepare('SELECT slug, image FROM products WHERE id = ? LIMIT 1');
+            if ($stmt) {
+                $stmt->bind_param('i', $product_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $current_record = $result ? $result->fetch_assoc() : null;
+                $stmt->close();
+            }
+            if (!$current_record) {
+                $message = 'Product not found for update.';
+                $message_type = 'danger';
+                $is_update = false;
+            }
+        }
+
+        if ($category_id <= 0) {
+            $message = 'Please choose a product category.';
+            $message_type = 'danger';
+        } elseif ($name === '') {
+            $message = 'Please enter the product name.';
+            $message_type = 'danger';
+        } elseif ($description === '') {
+            $message = 'Please enter a short product description.';
             $message_type = 'danger';
         } else {
-            $upload_dir = __DIR__ . '/../images/products';
-            if (!is_dir($upload_dir) && !mkdir($upload_dir, 0775, true) && !is_dir($upload_dir)) {
-                $message = 'Unable to create the product image folder.';
+            $allowed_types = [
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/gif' => 'gif',
+                'image/webp' => 'webp',
+            ];
+
+            $image_uploaded = isset($_FILES['image']) && is_uploaded_file($_FILES['image']['tmp_name']);
+            if (!$image_uploaded && !$is_update) {
+                $message = 'Please choose a product image.';
                 $message_type = 'danger';
             } else {
-                $base_slug = $slug_input !== '' ? slugify($slug_input) : slugify($name);
-                $slug = generate_unique_slug($conn, $base_slug);
-                $safe_name = preg_replace('/[^a-zA-Z0-9_-]/', '_', pathinfo($_FILES['image']['name'], PATHINFO_FILENAME));
-                if ($safe_name === '' || $safe_name === null) {
-                    $safe_name = 'product';
-                }
-
-                $extension = $allowed_types[$file_type];
-                $stored_name = $safe_name . '_' . time() . '_' . mt_rand(1000, 9999) . '.' . $extension;
-                $destination = $upload_dir . '/' . $stored_name;
-                $database_path = 'images/products/' . $stored_name;
-
-                if (!move_uploaded_file($tmp_name, $destination)) {
-                    $message = 'Could not save the uploaded image.';
+                $upload_dir = __DIR__ . '/../images/products';
+                if (!is_dir($upload_dir) && !mkdir($upload_dir, 0775, true) && !is_dir($upload_dir)) {
+                    $message = 'Unable to create the product image folder.';
                     $message_type = 'danger';
                 } else {
-                    $packaging = trim($form['packaging']);
-                    $storage = trim($form['storage']);
-                    $benefits = trim($form['benefits']);
-                    $usage_info = trim($form['usage_info']);
-                    $sort_order = (int) $form['sort_order'];
-                    $is_active = (int) $form['is_active'];
+                    $database_path = $current_record['image'] ?? '';
+                    $destination = '';
+                    $old_image_path = $current_record['image'] ?? '';
 
-                    $stmt = $conn->prepare(
-                        'INSERT INTO products (category_id, slug, name, image, description, benefits, usage_info, packaging, storage, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-                    );
+                    if ($image_uploaded) {
+                        $tmp_name = $_FILES['image']['tmp_name'];
+                        $file_size = (int) ($_FILES['image']['size'] ?? 0);
+                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                        $file_type = $finfo ? finfo_file($finfo, $tmp_name) : '';
 
-                    if (!$stmt) {
-                        $message = 'Database insert failed.';
-                        $message_type = 'danger';
-                        @unlink($destination);
-                    } else {
-                        $stmt->bind_param(
-                            'issssssssii',
-                            $category_id,
-                            $slug,
-                            $name,
-                            $database_path,
-                            $description,
-                            $benefits,
-                            $usage_info,
-                            $packaging,
-                            $storage,
-                            $sort_order,
-                            $is_active
-                        );
-
-                        if ($stmt->execute()) {
-                            $stmt->close();
-                            header('Location: upload_photo.php?success=1');
-                            exit();
+                        if ($finfo) {
+                            finfo_close($finfo);
                         }
 
-                        $message = 'Product was saved, but the database insert failed.';
-                        $message_type = 'danger';
-                        $stmt->close();
-                        @unlink($destination);
+                        if (!isset($allowed_types[$file_type])) {
+                            $message = 'Only JPG, PNG, GIF, and WEBP images are allowed.';
+                            $message_type = 'danger';
+                        } elseif ($file_size <= 0 || $file_size > 5 * 1024 * 1024) {
+                            $message = 'Image is too large. Maximum file size is 5MB.';
+                            $message_type = 'danger';
+                        } else {
+                            $safe_name = preg_replace('/[^a-zA-Z0-9_-]/', '_', pathinfo($_FILES['image']['name'], PATHINFO_FILENAME));
+                            if ($safe_name === '' || $safe_name === null) {
+                                $safe_name = 'product';
+                            }
+
+                            $extension = $allowed_types[$file_type];
+                            $stored_name = $safe_name . '_' . time() . '_' . mt_rand(1000, 9999) . '.' . $extension;
+                            $destination = $upload_dir . '/' . $stored_name;
+                            $database_path = 'images/products/' . $stored_name;
+
+                            if (!move_uploaded_file($tmp_name, $destination)) {
+                                $message = 'Could not save the uploaded image.';
+                                $message_type = 'danger';
+                            }
+                        }
+                    }
+
+                    if ($message === '') {
+                        $current_slug = $current_record['slug'] ?? '';
+                        if ($is_update) {
+                            $slug = $current_slug;
+                            if ($slug_input !== '') {
+                                $base_slug = slugify($slug_input);
+                                if ($base_slug !== $current_slug) {
+                                    $slug = generate_unique_slug($conn, $base_slug);
+                                }
+                            }
+                        } else {
+                            $base_slug = $slug_input !== '' ? slugify($slug_input) : slugify($name);
+                            $slug = generate_unique_slug($conn, $base_slug);
+                        }
+
+                        $packaging = trim($form['packaging']);
+                        $storage = trim($form['storage']);
+                        $benefits = trim($form['benefits']);
+                        $usage_info = trim($form['usage_info']);
+                        $sort_order = (int) $form['sort_order'];
+                        $is_active = (int) $form['is_active'];
+
+                        if ($is_update) {
+                            $stmt = $conn->prepare(
+                                'UPDATE products SET category_id = ?, slug = ?, name = ?, image = ?, description = ?, benefits = ?, usage_info = ?, packaging = ?, storage = ?, sort_order = ?, is_active = ? WHERE id = ?'
+                            );
+                            if ($stmt) {
+                                $stmt->bind_param(
+                                    'issssssssiii',
+                                    $category_id,
+                                    $slug,
+                                    $name,
+                                    $database_path,
+                                    $description,
+                                    $benefits,
+                                    $usage_info,
+                                    $packaging,
+                                    $storage,
+                                    $sort_order,
+                                    $is_active,
+                                    $product_id
+                                );
+
+                                if ($stmt->execute()) {
+                                    if ($image_uploaded && $old_image_path !== '' && $old_image_path !== $database_path) {
+                                        $old_path = __DIR__ . '/../' . ltrim($old_image_path, '/');
+                                        if (is_file($old_path)) {
+                                            @unlink($old_path);
+                                        }
+                                    }
+                                    $stmt->close();
+                                    header('Location: upload_photo.php?success=1&updated=1');
+                                    exit();
+                                }
+
+                                $message = 'Product update failed.';
+                                $message_type = 'danger';
+                                $stmt->close();
+                                if ($image_uploaded && $destination !== '' && is_file($destination)) {
+                                    @unlink($destination);
+                                }
+                            }
+                        } else {
+                            $stmt = $conn->prepare(
+                                'INSERT INTO products (category_id, slug, name, image, description, benefits, usage_info, packaging, storage, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                            );
+
+                            if (!$stmt) {
+                                $message = 'Database insert failed.';
+                                $message_type = 'danger';
+                                if ($destination !== '' && is_file($destination)) {
+                                    @unlink($destination);
+                                }
+                            } else {
+                                $stmt->bind_param(
+                                    'issssssssii',
+                                    $category_id,
+                                    $slug,
+                                    $name,
+                                    $database_path,
+                                    $description,
+                                    $benefits,
+                                    $usage_info,
+                                    $packaging,
+                                    $storage,
+                                    $sort_order,
+                                    $is_active
+                                );
+
+                                if ($stmt->execute()) {
+                                    $stmt->close();
+                                    header('Location: upload_photo.php?success=1');
+                                    exit();
+                                }
+
+                                $message = 'Product was saved, but the database insert failed.';
+                                $message_type = 'danger';
+                                $stmt->close();
+                                if ($destination !== '' && is_file($destination)) {
+                                    @unlink($destination);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -210,6 +372,20 @@ $recent_result = mysqli_query(
 if ($recent_result) {
     while ($row = mysqli_fetch_assoc($recent_result)) {
         $recent_products[] = $row;
+    }
+}
+
+$products_result = mysqli_query(
+    $conn,
+    'SELECT p.id, p.name, p.slug, p.image, p.is_active, p.created_at, c.title AS category_title '
+    . 'FROM products p '
+    . 'LEFT JOIN categories c ON p.category_id = c.id '
+    . 'ORDER BY p.created_at DESC, p.id DESC '
+    . 'LIMIT 20'
+);
+if ($products_result) {
+    while ($row = mysqli_fetch_assoc($products_result)) {
+        $products[] = $row;
     }
 }
 ?>
@@ -428,6 +604,8 @@ if ($recent_result) {
             <a class="nav-link active" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
             <a class="nav-link" href="view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
             <a class="nav-link" href="view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
+            <a class="nav-link" href="view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
+            <a class="nav-link" href="login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
             <a class="nav-link text-danger mt-3" href="adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
         </nav>
     </div>
@@ -494,6 +672,10 @@ if ($recent_result) {
                             </div>
 
                             <form method="POST" enctype="multipart/form-data" class="row g-3">
+                                <input type="hidden" name="product_action" value="<?php echo $is_editing ? 'update' : 'create'; ?>">
+                                <?php if ($is_editing): ?>
+                                    <input type="hidden" name="product_id" value="<?php echo (int) $edit_product_id; ?>">
+                                <?php endif; ?>
                                 <div class="col-md-6">
                                     <label for="category_id" class="form-label">Category *</label>
                                     <select name="category_id" id="category_id" class="form-select" required>
@@ -519,8 +701,13 @@ if ($recent_result) {
                                 </div>
                                 <div class="col-12">
                                     <label for="image" class="form-label">Product image *</label>
-                                    <input type="file" name="image" id="image" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp" required>
-                                    <small class="text-muted">Accepted formats: JPG, PNG, GIF, WEBP. Maximum size: 5MB.</small>
+                                    <input type="file" name="image" id="image" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp" <?php echo $is_editing ? '' : 'required'; ?>>
+                                    <small class="text-muted">Accepted formats: JPG, PNG, GIF, WEBP. Maximum size: 5MB. <?php echo $is_editing ? 'Leave blank to keep the current image.' : ''; ?></small>
+                                    <?php if ($is_editing && $current_product_image !== ''): ?>
+                                        <div class="mt-2">
+                                            <img src="../<?php echo htmlspecialchars($current_product_image); ?>" alt="Current product" class="img-fluid rounded" style="max-height: 140px;">
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="col-12">
                                     <label for="description" class="form-label">Description *</label>
@@ -548,7 +735,7 @@ if ($recent_result) {
                                         <label class="form-check-label" for="is_active">Publish immediately</label>
                                     </div>
                                     <button type="submit" class="btn btn-success btn-lg px-4">
-                                        <i class="bi bi-save2 me-2"></i>Save Product
+                                        <i class="bi bi-save2 me-2"></i><?php echo $is_editing ? 'Update Product' : 'Save Product'; ?>
                                     </button>
                                 </div>
                             </form>
@@ -557,14 +744,14 @@ if ($recent_result) {
                 </div>
 
                 <div class="col-lg-5">
-                    <div class="help-box p-4 mb-4">
-                        <h3 class="h5 section-title mb-3">What happens after save</h3>
+                    <!-- <div class="help-box p-4 mb-4">
+                         <h3 class="h5 section-title mb-3">What happens after save</h3>
                         <ul class="mb-0 ps-3 text-secondary">
                             <li>The product is inserted into the `products` table.</li>
                             <li>The uploaded image is stored in `images/products/`.</li>
                             <li>The public product pages read the new record automatically.</li>
-                        </ul>
-                    </div>
+                        </ul> 
+                    </div> -->
 
                     <div class="card preview-card mb-4">
                         <div class="card-body p-4">
@@ -598,6 +785,68 @@ if ($recent_result) {
                     <div class="alert alert-success border-0 shadow-sm mb-0">
                         <strong>Tip:</strong> Keep the product name clear and the description short. Customers will see this content on the public store pages immediately.
                     </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mt-5">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Manage products</h4>
+                        <span class="text-muted">Latest 20 items</span>
+                    </div>
+
+                    <?php if (!empty($products)): ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-success">
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Name</th>
+                                        <th>Category</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($products as $product): ?>
+                                        <tr>
+                                            <td style="width: 90px;">
+                                                <img src="../<?php echo htmlspecialchars(!empty($product['image']) ? $product['image'] : 'images/fs.broiler-chicks.avif'); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-fluid rounded" style="max-height: 60px;">
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold"><?php echo htmlspecialchars($product['name']); ?></div>
+                                                <small class="text-muted"><?php echo htmlspecialchars($product['slug']); ?></small>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($product['category_title'] ?? 'Uncategorized'); ?></td>
+                                            <td>
+                                                <?php if ((int) ($product['is_active'] ?? 0) === 1): ?>
+                                                    <span class="badge bg-success">Active</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-secondary">Hidden</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php echo htmlspecialchars(date('M d, Y', strtotime((string) $product['created_at']))); ?>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <a href="upload_photo.php?edit=<?php echo (int) $product['id']; ?>" class="btn btn-outline-success btn-sm">Edit</a>
+                                                    <form method="POST" class="m-0" onsubmit="return confirm('Delete this product?');">
+                                                        <input type="hidden" name="product_action" value="delete">
+                                                        <input type="hidden" name="product_id" value="<?php echo (int) $product['id']; ?>">
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-light border mb-0">No products available yet.</div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

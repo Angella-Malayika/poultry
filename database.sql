@@ -41,6 +41,32 @@ CREATE TABLE IF NOT EXISTS messages (
     read_at DATETIME DEFAULT NULL
 );
 
+-- Create complaints/feedback table
+CREATE TABLE IF NOT EXISTS complaints (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) DEFAULT NULL,
+    order_id VARCHAR(50) DEFAULT NULL,
+    category VARCHAR(20) NOT NULL,
+    subject VARCHAR(150) NOT NULL,
+    message_text TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'new',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create login activity table
+CREATE TABLE IF NOT EXISTS login_activity (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    user_id INT(11) NOT NULL,
+    username VARCHAR(50) NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    ip_address VARCHAR(45) DEFAULT NULL,
+    user_agent VARCHAR(255) DEFAULT NULL,
+    login_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    logout_at DATETIME DEFAULT NULL
+);
+
 -- Photos table is created dynamically by upload_photo.php via ensure_photo_schema()
 
 -- Create categories table
@@ -263,3 +289,5 @@ use poultry;
 INSERT INTO users (username, email, password, role) VALUES
 ('Admin', 'admin@kalungufeeds.com', '$2y$12$8/qAxFOSdd0mFKCZb4wU.Oqbi7qdXP/yyO13dEabibd4QMvLhzzY2', 'admin')
 ON DUPLICATE KEY UPDATE role = 'admin';
+
+ALTER TABLE orders MODIFY COLUMN product VARCHAR(255) NOT NULL;

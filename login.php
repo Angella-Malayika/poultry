@@ -61,6 +61,40 @@ if (isset($_POST['login'])) {
                             $role = 'user';
                         }
                         $_SESSION['role'] = $role;
+                        $_SESSION['last_activity'] = time();
+
+                        $conn->query(
+                            "CREATE TABLE IF NOT EXISTS login_activity (\n"
+                            . "id INT AUTO_INCREMENT PRIMARY KEY,\n"
+                            . "user_id INT NOT NULL,\n"
+                            . "username VARCHAR(50) NOT NULL,\n"
+                            . "role VARCHAR(20) NOT NULL,\n"
+                            . "ip_address VARCHAR(45) DEFAULT NULL,\n"
+                            . "user_agent VARCHAR(255) DEFAULT NULL,\n"
+                            . "login_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+                            . "logout_at DATETIME DEFAULT NULL\n"
+                            . ")"
+                        );
+
+                        $activity_stmt = $conn->prepare(
+                            "INSERT INTO login_activity (user_id, username, role, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)"
+                        );
+                        if ($activity_stmt) {
+                            $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
+                            $user_agent = substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255);
+                            $activity_stmt->bind_param(
+                                'issss',
+                                $_SESSION['user_id'],
+                                $_SESSION['username'],
+                                $_SESSION['role'],
+                                $ip_address,
+                                $user_agent
+                            );
+                            if ($activity_stmt->execute()) {
+                                $_SESSION['login_activity_id'] = (int) $activity_stmt->insert_id;
+                            }
+                            $activity_stmt->close();
+                        }
 
                         if ($role === 'admin') {
                             header("Location: Admin/admin.php");

@@ -16,8 +16,32 @@ if ($table_check && mysqli_num_rows($table_check) > 0) {
 $photo_count = count($photos);
 
 $pending_order_count = 0;
+$delivered_order_count = 0;
+$trend_labels = [];
+$trend_pending = [];
+$trend_delivered = [];
 $orders_table_check = mysqli_query($conn, "SHOW TABLES LIKE 'orders'");
 if ($orders_table_check && mysqli_num_rows($orders_table_check) > 0) {
+    $status_column = mysqli_query($conn, "SHOW COLUMNS FROM orders LIKE 'status'");
+    if ($status_column && mysqli_num_rows($status_column) === 0) {
+        mysqli_query($conn, "ALTER TABLE orders ADD COLUMN status VARCHAR(20) DEFAULT 'pending'");
+    }
+
+    $order_date_column = 'order_date';
+    $columns = [];
+    $columns_result = mysqli_query($conn, 'SHOW COLUMNS FROM orders');
+    if ($columns_result) {
+        while ($col = mysqli_fetch_assoc($columns_result)) {
+            $columns[] = $col['Field'];
+        }
+    }
+    foreach (['order_date', 'created_at', 'date'] as $candidate) {
+        if (in_array($candidate, $columns, true)) {
+            $order_date_column = $candidate;
+            break;
+        }
+    }
+
     $pending_result = mysqli_query(
         $conn,
         "SELECT COUNT(*) AS total FROM orders WHERE LOWER(COALESCE(status, 'pending')) IN ('pending', 'new')"
@@ -25,6 +49,50 @@ if ($orders_table_check && mysqli_num_rows($orders_table_check) > 0) {
     if ($pending_result) {
         $pending_row = mysqli_fetch_assoc($pending_result);
         $pending_order_count = (int) ($pending_row['total'] ?? 0);
+    }
+
+    $delivered_result = mysqli_query(
+        $conn,
+        "SELECT COUNT(*) AS total FROM orders WHERE LOWER(COALESCE(status, '')) = 'delivered'"
+    );
+    if ($delivered_result) {
+        $delivered_row = mysqli_fetch_assoc($delivered_result);
+        $delivered_order_count = (int) ($delivered_row['total'] ?? 0);
+    }
+
+    $month_labels = [];
+    $month_keys = [];
+    $start = new DateTime('first day of -5 months');
+    $period = new DatePeriod($start, new DateInterval('P1M'), 6);
+    foreach ($period as $dt) {
+        $month_keys[] = $dt->format('Y-m');
+        $month_labels[] = $dt->format('M Y');
+    }
+
+    $start_date = $start->format('Y-m-01');
+    $trend_sql =
+        "SELECT DATE_FORMAT(`" . $order_date_column . "`, '%Y-%m') AS ym,\n"
+        . "SUM(CASE WHEN LOWER(COALESCE(status, 'pending')) IN ('pending', 'new') THEN 1 ELSE 0 END) AS pending_total,\n"
+        . "SUM(CASE WHEN LOWER(COALESCE(status, '')) = 'delivered' THEN 1 ELSE 0 END) AS delivered_total\n"
+        . "FROM orders\n"
+        . "WHERE `" . $order_date_column . "` >= '" . $start_date . "'\n"
+        . "GROUP BY ym";
+
+    $trend_map = [];
+    $trend_res = mysqli_query($conn, $trend_sql);
+    if ($trend_res) {
+        while ($row = mysqli_fetch_assoc($trend_res)) {
+            $trend_map[$row['ym']] = [
+                'pending' => (int) ($row['pending_total'] ?? 0),
+                'delivered' => (int) ($row['delivered_total'] ?? 0),
+            ];
+        }
+    }
+
+    foreach ($month_keys as $index => $key) {
+        $trend_labels[] = $month_labels[$index];
+        $trend_pending[] = isset($trend_map[$key]) ? $trend_map[$key]['pending'] : 0;
+        $trend_delivered[] = isset($trend_map[$key]) ? $trend_map[$key]['delivered'] : 0;
     }
 }
 
@@ -146,6 +214,8 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
             <a class="nav-link" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
             <a class="nav-link" href="view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
             <a class="nav-link" href="view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
+            <a class="nav-link" href="view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
+            <a class="nav-link" href="login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
             <a class="nav-link mt-auto text-danger" href="adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
         </nav>
     </div>
@@ -165,7 +235,33 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
 
             <!-- Stats Row -->
             <div class="row g-3 mb-4">
-                <div class="col-sm-6 col-lg-4">
+                <div class="col-sm-6 col-lg-3">
+                    <a href="view_orders.php" class="card stat-card shadow-sm stat-link" aria-label="Open orders page">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
+                                <i class="bi bi-truck text-warning fs-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0"><?php echo $pending_order_count; ?></h3>
+                                <small class="text-muted">Pending Deliveries</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <a href="view_orders.php" class="card stat-card shadow-sm stat-link" aria-label="Open delivered orders">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                                <i class="bi bi-check2-circle text-success fs-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0"><?php echo $delivered_order_count; ?></h3>
+                                <small class="text-muted">Delivered</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-sm-6 col-lg-3">
                     <div class="card stat-card shadow-sm">
                         <div class="card-body d-flex align-items-center">
                             <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
@@ -178,20 +274,7 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-lg-4">
-                    <a href="view_orders.php" class="card stat-card shadow-sm stat-link" aria-label="Open orders page">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
-                                <i class="bi bi-cart3 text-primary fs-4"></i>
-                            </div>
-                            <div>
-                                <h3 class="mb-0"><?php echo $pending_order_count; ?></h3>
-                                <small class="text-muted">New Orders</small>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-sm-6 col-lg-4">
+                <div class="col-sm-6 col-lg-3">
                     <a href="view_messages.php" class="card stat-card shadow-sm stat-link" aria-label="Open messages page">
                         <div class="card-body d-flex align-items-center">
                             <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
@@ -203,6 +286,16 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
                             </div>
                         </div>
                     </a>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="bi bi-graph-up-arrow me-2"></i>Delivery Trends</h5>
+                        <small class="text-muted">Last 6 months</small>
+                    </div>
+                    <canvas id="deliveryChart" height="120"></canvas>
                 </div>
             </div>
 
@@ -247,5 +340,51 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    const deliveryLabels = <?php echo json_encode($trend_labels); ?>;
+    const pendingData = <?php echo json_encode($trend_pending); ?>;
+    const deliveredData = <?php echo json_encode($trend_delivered); ?>;
+
+    const chartEl = document.getElementById('deliveryChart');
+    if (chartEl) {
+        new Chart(chartEl, {
+            type: 'line',
+            data: {
+                labels: deliveryLabels,
+                datasets: [
+                    {
+                        label: 'Pending',
+                        data: pendingData,
+                        borderColor: '#f4a261',
+                        backgroundColor: 'rgba(244, 162, 97, 0.2)',
+                        fill: true,
+                        tension: 0.35
+                    },
+                    {
+                        label: 'Delivered',
+                        data: deliveredData,
+                        borderColor: '#2a9d8f',
+                        backgroundColor: 'rgba(42, 157, 143, 0.2)',
+                        fill: true,
+                        tension: 0.35
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                }
+            }
+        });
+    }
+</script>
 </body>
 </html>
