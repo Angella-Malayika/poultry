@@ -107,6 +107,17 @@ if ($products_result) {
             background-color: #1b5e20;
             color: white;
         }
+        .btn-cart {
+            background-color: #ffffff;
+            color: #2e7d32;
+            border: 1px solid #2e7d32;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+        .btn-cart:hover {
+            background-color: #2e7d32;
+            color: white;
+        }
         .breadcrumb {
             background-color: #f9fbe7;
             padding: 1rem;
@@ -150,7 +161,7 @@ if ($products_result) {
                 <p style="color: #333; margin-bottom: 0;">
                     Explore our complete range of <?php echo strtolower($category_data['title']); ?>. 
                     Each product is carefully selected and quality-tested to ensure the best results for your farming operation. 
-                    Click on any product to view detailed information and to place an order.
+                    Click on any product to view detailed information, add it to your cart, and place an order when ready.
                 </p>
             </div>
 
@@ -170,6 +181,9 @@ if ($products_result) {
                                 <p class="card-text text-muted small flex-grow-1"><?php echo htmlspecialchars($product['description']); ?></p>
                                 <a href="product-details.php?product=<?php echo htmlspecialchars($product['slug']); ?>" class="btn btn-view btn-sm">
                                     <i class="fas fa-eye me-2"></i>View Details
+                                </a>
+                                <a href="add_to_cart.php?product=<?php echo htmlspecialchars($product['slug']); ?>" class="btn btn-cart btn-sm">
+                                    <i class="fas fa-cart-plus me-2"></i>Add to Cart
                                 </a>
                             </div>
                         </div>

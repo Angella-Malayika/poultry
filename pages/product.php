@@ -1,5 +1,5 @@
 <?php
-include 'connection.php';
+include '../connection.php';
 
 $page_title = 'Products | Kalungu Quality Feeds';
 $fallback_image = 'images/fs.broiler-chicks.avif';
@@ -65,8 +65,10 @@ function truncate_text($text, $length = 120)
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title><?php echo htmlspecialchars($page_title); ?></title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-	<link rel="stylesheet" href="./assets/head.css">
-	<link rel="stylesheet" href="./assets/foot.css">
+	<link rel="stylesheet" href="../assets/joy.css">
+		<link rel="stylesheet" href="../assets/foot.css">
+	<link rel="stylesheet" href="../assets/head.css">
+
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 	<style>
 		body {
@@ -209,6 +211,28 @@ function truncate_text($text, $length = 120)
 			text-decoration: underline;
 		}
 
+		.product-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.6rem;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.btn-cart-action {
+			background: #2e7d32;
+			color: #fff;
+			border-radius: 999px;
+			padding: 0.55rem 1rem;
+			font-weight: 700;
+			text-decoration: none;
+		}
+
+		.btn-cart-action:hover {
+			background: #1f5d25;
+			color: #fff;
+		}
+
 		.catalog-note {
 			background: linear-gradient(135deg, rgba(46, 125, 50, 0.1), rgba(243, 250, 242, 0.9));
 			border: 1px solid rgba(46, 125, 50, 0.15);
@@ -219,7 +243,7 @@ function truncate_text($text, $length = 120)
 </head>
 
 <body>
-	<?php include 'header.php'; ?>
+	<?php include '../includes/header.php'; ?>
 
 	<main>
 		<section class="store-hero">
@@ -228,11 +252,11 @@ function truncate_text($text, $length = 120)
 					<div class="col-lg-7">
 						<span class="store-kicker"><i class="fa-solid fa-store"></i> Live store catalog</span>
 						<h1>Browse products and see new stock as it is added.</h1>
-						<p>
-							Explore our full range of available products and lastest additions.
-							We keep this page updated in real time so you always shop our freshest stock.
-							Click on any product to see details and place your order.
-						</p>
+							<p>
+								Explore our full range of available products and lastest additions.
+								We keep this page updated in real time so you always shop our freshest stock.
+								Add products to your cart, then review them before you place an order.
+							</p>
 						<div class="d-flex flex-wrap gap-3 mt-4">
 							<a href="#new-products" class="btn btn-success btn-lg px-4">
 								<i class="fa-solid fa-sparkles me-2"></i>View New Products
@@ -326,10 +350,13 @@ function truncate_text($text, $length = 120)
 										</div>
 										<h3 class="h5 product-title"><?php echo htmlspecialchars($product['name']); ?></h3>
 										<p class="text-secondary mb-4"><?php echo htmlspecialchars(truncate_text($product['description'], 130)); ?></p>
-										<div class="mt-auto d-flex justify-content-between align-items-center">
+										<div class="product-actions mt-auto">
 											<a class="product-link" href="product-details.php?product=<?php echo urlencode($product['slug']); ?>">View details</a>
-											<small class="text-muted">Added <?php echo htmlspecialchars(date('M j', strtotime($product['created_at']))); ?></small>
+											<a class="btn-cart-action" href="add_to_cart.php?product=<?php echo urlencode($product['slug']); ?>">
+												<i class="fa-solid fa-cart- plus me-1"></i>Add to Cart
+											</a>
 										</div>
+										<small class="text-muted mt-3">Added <?php echo htmlspecialchars(date('M j', strtotime($product['created_at']))); ?></small>
 									</div>
 								</div>
 							</div>
@@ -375,9 +402,11 @@ function truncate_text($text, $length = 120)
 										</span>
 										<h3 class="h5 product-title"><?php echo htmlspecialchars($product['name']); ?></h3>
 										<p class="text-secondary mb-4"><?php echo htmlspecialchars(truncate_text($product['description'], 110)); ?></p>
-										<div class="d-flex justify-content-between align-items-center mt-auto">
+										<div class="product-actions mt-auto">
 											<a class="product-link" href="product-details.php?product=<?php echo urlencode($product['slug']); ?>">Details</a>
-											<!-- <small class="text-muted"><?php echo str_pad((string)  '0', STR_PAD_LEFT); ?></small> -->
+											<a class="btn-cart-action" href="add_to_cart.php?product=<?php echo urlencode($product['slug']); ?>">
+												<i class="fa-solid fa-cart-plus me-1"></i>Add to Cart
+											</a>
 										</div>
 									</div>
 								</div>
@@ -393,7 +422,7 @@ function truncate_text($text, $length = 120)
 		</section>
 	</main>
 
-	<?php include 'footer.php'; ?>
+	<?php include '../includes/footer.php'; ?>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>

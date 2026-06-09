@@ -1,4 +1,4 @@
-<?php require_once 'auth_required.php'; ?>
+<?php require_once '../auth_required.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us - Kalungu Quality Feeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="/assets/joy.css">
+    <link rel="stylesheet" href="../assets/joy.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <style>
         /* Contact info card adjustments: ensure content fits and phone links don't look like blue anchors */
@@ -94,7 +94,7 @@
     </style>
 </head>
 <body>
-    <?php include 'header.php'; ?>
+    <?php include '../includes/header.php'; ?>
                 <section id="contact" class="contact-section">
     <div class="container">
         <h2 class="text-center mb-5">Contact Us</h2>
@@ -207,7 +207,7 @@ document.getElementById('messageForm').addEventListener('submit', function(e) {
     this.submit();
 });
 </script>
-        <?php include  'footer.php'; ?>
+        <?php include  '../includes/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 </html>

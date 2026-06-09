@@ -1,4 +1,4 @@
-<?php require_once 'auth_required.php'; ?>
+<?php require_once '../auth_required.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us - Kalungu Quality Feeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="joy.css">
+    <!-- <link rel="stylesheet" href="./styles/joy.css"> -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 </head>
 
@@ -205,7 +205,7 @@
     }
 }
     </style>
-<?php include 'header.php'; ?>
+<?php include '../includes/header.php'; ?>
     <main class="about-page">
         <!-- Hero Section -->
         <section class="about-hero">
@@ -221,10 +221,10 @@
                                 for farmers across Uganda.
                             </p>
                             <div class="about-hero-actions">
-                                <a class="btn  btn-sm rounded-4 border border-2 border-success text-success" href="product.php#feeds">
+                                <a class="btn  btn-sm rounded-4 border border-2 border-success text-success" href="./pages/product.php#feeds">
                                     <i class="fas fa-seedling me-2"></i>Explore Our Products
-</a>
-                                <a class="btn  btn-sm rounded-5 border border-2 border-success text-success" href="contact.php" style="color: #2e7d32;">
+                                </a>
+                                <a class="btn  btn-sm rounded-5 border border-2 border-success text-success" href="./pages/contact.php" style="color: #2e7d32;">
                                    <i class="fas fa-phone me-2"></i>Contact Us 
                                 </a>
                             </div>
@@ -632,7 +632,7 @@
         </section>
     </main>
 
-    <?php include 'footer.php'; ?>
+    <?php include '../includes/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>

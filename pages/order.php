@@ -1,6 +1,7 @@
 <?php
-require_once 'auth_required.php';
-include 'connection.php';
+require_once '../auth_required.php';
+include '../connection.php';
+require_once __DIR__ . '/../includes/cart_helpers.php';
 $message = '';
 $order_placed = false;
 $order_details = [];
@@ -77,6 +78,26 @@ $prefill_unit = default_unit_for_product($prefill_product, $product_options);
 $order_item_inputs = [
     ['product' => $prefill_product, 'quantity' => '1', 'unit' => $prefill_unit],
 ];
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $cart_prefill_items = [];
+    foreach (poultry_cart_get_items() as $cart_slug => $cart_quantity) {
+        $resolved_product = resolve_product_key($cart_slug, $product_options);
+        if ($resolved_product === '') {
+            continue;
+        }
+
+        $cart_prefill_items[] = [
+            'product' => $resolved_product,
+            'quantity' => format_quantity_value(max(1, (float) $cart_quantity)),
+            'unit' => default_unit_for_product($resolved_product, $product_options),
+        ];
+    }
+
+    if (!empty($cart_prefill_items)) {
+        $order_item_inputs = $cart_prefill_items;
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -203,6 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Send order confirmation email
                     require_once 'email_config.php';
                     sendOrderConfirmationEmail($order_details);
+                    poultry_cart_clear();
                 }
             } else {
                 $message = '<div class="alert alert-danger">Error: ' . htmlspecialchars($stmt->error) . '</div>';
@@ -223,14 +245,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="google-site-verification" content="DxOSWhae3DL7OIIjettiAneNnAyV8CYP49sqXRnojeg" />
     <title>Place an Order | Kalungu Quality Feeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="./assets/joy.css">
+    <link rel="stylesheet" href="../assets/joy.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <style>
     </style>
 </head>
 
 <body>
-    <?php include 'header.php'; ?>
+    <?php include '../includes/header.php'; ?>
     <!-- Order Hero Section -->
     <section class="order-hero">
         <div class="container">
@@ -584,7 +606,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </script>
 
-    <?php include  'footer.php'; ?>
+    <?php include  '../includes/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 

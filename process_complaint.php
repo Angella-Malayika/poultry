@@ -3,6 +3,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once 'auth_required.php';
 include 'connection.php';
 
 $name = trim((string) ($_POST['name'] ?? ''));
@@ -15,6 +16,12 @@ $message = trim((string) ($_POST['message'] ?? ''));
 
 if ($name === '' || $email === '' || $category === '' || $subject === '' || $message === '') {
     $_SESSION['feedback_error'] = 'Please fill in all required fields.';
+    header('Location: complaints.php');
+    exit();
+}
+
+if ($order_id === '' || !ctype_digit($order_id)) {
+    $_SESSION['feedback_error'] = 'Please enter a valid order ID.';
     header('Location: complaints.php');
     exit();
 }
@@ -36,6 +43,28 @@ if (!in_array($category, ['complaint', 'appreciation'], true)) {
     header('Location: complaints.php');
     exit();
 }
+
+$order_stmt = $conn->prepare('SELECT id FROM orders WHERE id = ? AND user_id = ? LIMIT 1');
+if (!$order_stmt) {
+    $_SESSION['feedback_error'] = 'Unable to validate your order right now.';
+    header('Location: complaints.php');
+    exit();
+}
+
+$order_id_value = (int) $order_id;
+$current_user_id = (int) ($_SESSION['user_id'] ?? 0);
+$order_stmt->bind_param('ii', $order_id_value, $current_user_id);
+$order_stmt->execute();
+$order_result = $order_stmt->get_result();
+
+if (!$order_result || $order_result->num_rows === 0) {
+    $order_stmt->close();
+    $_SESSION['feedback_error'] = 'Please enter an order ID from your own order history.';
+    header('Location: complaints.php');
+    exit();
+}
+
+$order_stmt->close();
 
 $conn->query(
     "CREATE TABLE IF NOT EXISTS complaints (\n"

@@ -9,7 +9,6 @@
 }
 
 #footer {
-  background-color: #a4e0a8;
   color: #ffffff;
   padding: 40px 0 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -18,19 +17,18 @@
   margin: 0;
   font-size: 16px;
 }
-.footer-container {
-
+.container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-  max-width: 1200px;
+  gap: 60px;
+  max-width: 3000px;
   margin: 0 auto;
   padding: 0 20px;
   margin-bottom: -10PX;
 }
  .footer-columns{
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: flex-start;
   gap: 40px;
  }

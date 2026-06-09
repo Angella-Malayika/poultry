@@ -1,5 +1,5 @@
 <?php
-include("connection.php");
+include("../connection.php");
 session_start();
 
 $message = ''; // Initialize message variable to prevent undefined warnings
@@ -26,7 +26,7 @@ if (isset($_POST['login'])) {
         $has_role     = in_array('role', $cols);
 
         if ($id_col === null || $pass_col === null || !$has_username) {
-            $message = '<div class="alert alert-danger">Database configuration error. Please contact the administrator.</div>';
+            $message = '<div class="alert alert-danger">An error occurred. Please contact the administrator.</div>';
         } else {
             $sel = "`{$id_col}` AS id, username, email, `{$pass_col}` AS pwd";
             if ($has_role) {
@@ -97,9 +97,9 @@ if (isset($_POST['login'])) {
                         }
 
                         if ($role === 'admin') {
-                            header("Location: Admin/admin.php");
+                            header("Location:  Admin/admin.php");
                         } else {
-                            header("Location: index.php");
+                            header("Location: ../index.php");
                         }
                         exit();
                     } else {
@@ -307,13 +307,9 @@ if (isset($_POST['login'])) {
                 </button>
             </form>
 
-            <!-- <div class="alert alert-info mt-3 small">
-                <strong>Demo admin:</strong> admin@kalungufeeds.com / Admin@123
-            </div> -->
-
             <div class="text-center">
-                <p>Don't have an account? <a href="signup.php">Sign up here</a></p>
-                <a href="index.php" class="back-link"><i class="fas fa-home"></i> Back to Home</a>
+                <p>Don't have an account? <a href="./signup.php">Sign up here</a></p>
+                <a href="../index.php" class="back-link"><i class="fas fa-home"></i> Back to Home</a>
             </div>
         </div>
     </main>
@@ -337,6 +333,6 @@ if (isset($_POST['login'])) {
             });
         }
     </script>
-    <?php include 'footer.php'; ?>
+    <?php include './includes/footer.php'; ?>
 </body>
 </html>

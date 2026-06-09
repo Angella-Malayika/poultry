@@ -7,7 +7,21 @@
     <title>Document</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="./assets/foot.css">
+    <style>
+    #footer {
+        background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+        width:100%;
+        justify-content:space-around;
+    }
+    .footer-columns{
+    display: flex;
+    justify-content: space-around;
+    align-items:flex-start;
+    gap:60px;
+  }
+    </style>
 </head>
+
 
 <body>
     

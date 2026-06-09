@@ -77,6 +77,15 @@ $benefits = !empty($product['benefits']) ? explode('|', $product['benefits']) : 
             margin-right: 1rem;
             margin-bottom: 1rem;
         }
+        .btn-cart-detail {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+        }
+        .btn-cart-detail:hover {
+            background-color: #1b5e20;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -113,8 +122,12 @@ $benefits = !empty($product['benefits']) ? explode('|', $product['benefits']) : 
 
                     <!-- Call to Action -->
                     <div class="cta-buttons">
+                        <a href="add_to_cart.php?product=<?php echo urlencode($product['slug']); ?>" 
+                        class="btn btn-lg btn-cart-detail">
+                            <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                        </a>
                         <a href="order.php?product=<?php echo urldecode($product['slug']); ?>" 
-                        class="btn btn-lg" style="background-color: #2e7d32; color: white; border: none;">
+                        class="btn btn-lg" style="background-color: white; color: #2e7d32; border: 2px solid #2e7d32;">
                             <i class="fas fa-shopping-cart me-2"></i>Order Now
                         </a>
                         <a href="contact.php" class="btn btn-lg" style="background-color: white; color: #2e7d32; border: 2px solid #2e7d32;">
@@ -146,6 +159,7 @@ $benefits = !empty($product['benefits']) ? explode('|', $product['benefits']) : 
 
                     <div class="detail-section">
                         <h3><i class="fas fa-warehouse me-2"></i>Storage Guidelines</h3>
+                        <p style="color: #333;"><?php echo htmlspecialchars($product['storage']); ?></p>
                     </div>
 
                     <!-- Additional Info -->

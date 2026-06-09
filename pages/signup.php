@@ -1,6 +1,6 @@
 <?php
+include '../connection.php';
 
-include './connection.php';
 session_start();
 
 $message = ''; // Initialize message variable
@@ -68,7 +68,7 @@ if (isset($_POST['signup'])) {
 
                         if ($insertStmt->execute()) {
                             // Registration successful - Send welcome email
-                            require_once 'email_config.php';
+                            require_once '../email_config.php';
                             sendWelcomeEmail($email, $username);
                             
                             $message = '<div class="alert alert-success">Account created successfully! A welcome email has been sent to your inbox. <a href="login.php">Login here</a></div>';

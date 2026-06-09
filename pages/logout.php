@@ -1,5 +1,5 @@
 <?php
-include("connection.php");
+include("../connection.php");
 session_start();
 
 if (!empty($_SESSION['login_activity_id']) && isset($_SESSION['user_id'])) {
@@ -14,6 +14,8 @@ if (!empty($_SESSION['login_activity_id']) && isset($_SESSION['user_id'])) {
         }
     }
 }
+
+unset($_SESSION['cart']);
 
 // Unset all session variables
 $_SESSION = array();
@@ -189,16 +191,16 @@ session_destroy();
         <p>We hope to see you soon!.</p>
 
         <div class="btn-group-logout">
-            <a href="index.php" class="btn-home">
+            <a href="../index.php" class="btn-home">
                 <i class="fas fa-home"></i> Back to Home
             </a>
-            <a href="login.php" class="btn-login">
+            <a href="../pages/login.php" class="btn-login">
                 <i class="fas fa-sign-in-alt"></i> Sign In Again
             </a>
         </div>
 
         <div class="logout-footer">
-            <small>Need help? <a href="contact.php">Contact our support team</a></small>
+            <small>Need help? <a href="./pages/contact.php">Contact our support team</a></small>
         </div>
     </div>
 

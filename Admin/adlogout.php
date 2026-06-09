@@ -15,6 +15,8 @@ if (!empty($_SESSION['login_activity_id']) && isset($_SESSION['user_id'])) {
 	}
 }
 
+unset($_SESSION['cart']);
+
 session_destroy();
 header('Location: ../login.php');
 ?>

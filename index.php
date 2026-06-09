@@ -67,12 +67,13 @@ if ($table_check && mysqli_num_rows($table_check) > 0) {
     <title>Kalungu Quality Feeds</title>
     <link
         rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="./assets/joy.css" />
+    <link rel="stylesheet" href="./assets/head.css" />
+    <link rel="stylesheet" href="./assets/foot.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 </head>
 
 <body>
-   <?php include 'header.php'; ?>     
+   <?php include './includes/header.php'; ?>     
    
     <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel" style="margin-top: 40px;">
         <div class="carousel-indicators">
@@ -115,18 +116,18 @@ if ($table_check && mysqli_num_rows($table_check) > 0) {
      <section class="dealers-section">
         <h2>Dealers In</h2>
         <div class="dealers-list">
-            <a class="dealer-item" href="product-category.php?category=broilers">Broiler Chicks</a>
-            <a class="dealer-item" href="product-category.php?category=layers">Layer Chicks</a>
-            <a class="dealer-item" href="product-category.php?category=kenbro-chicks">Kenbro Chicks</a>
-            <a class="dealer-item" href="product-category.php?category=pellets">Pellet</a>
-            <a class="dealer-item" href="product-category.php?category=feed-additives">Feed Additives</a>
-            <a class="dealer-item" href="product-category.php?category=feed-concentrates">Feed Concentrates</a>
-            <a class="dealer-item" href="product-category.php?category=chicks">Day Old Chicks</a>
-            <a class="dealer-item" href="product-category.php?category=consultancy">Consultancy</a>
+            <a class="dealer-item" href="../product-category.php?category=broilers">Broiler Chicks</a>
+            <a class="dealer-item" href="../product-category.php?category=layers">Layer Chicks</a>
+            <a class="dealer-item" href="../product-category.php?category=kenbro-chicks">Kenbro Chicks</a>
+            <a class="dealer-item" href="../product-category.php?category=pellets">Pellet</a>
+            <a class="dealer-item" href="../product-category.php?category=feed-additives">Feed Additives</a>
+            <a class="dealer-item" href="../product-category.php?category=feed-concentrates">Feed Concentrates</a>
+            <a class="dealer-item" href="../product-category.php?category=chicks">Day Old Chicks</a>
+            <a class="dealer-item" href="./product-category.php?category=consultancy">Consultancy</a>
         </div>
     </section>
 
-    <?php include 'footer.php'; ?>
+    <?php include './includes/footer.php'; ?>
 
   
  

@@ -185,7 +185,7 @@ blockquote {
 
 
 /* Hero Section */
-/* .about-hero {
+.about-hero {
     padding: 80px 0;
     position: relative;
     overflow: hidden;
@@ -269,9 +269,8 @@ blockquote {
 
 .about-hero-media img {
     border-radius: 15px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); */
-
-
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); 
+}
 
 .about-mvv {
     background: white;
