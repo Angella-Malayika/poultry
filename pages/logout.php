@@ -167,7 +167,7 @@ session_destroy();
             <a href="<?php echo BASE_URL; ?>./../index.php" class="btn-home">
                 <i class="fas fa-home"></i> Back to Home
             </a>
-            <a href="<?php echo BASE_URL; ?>/login.php" class="btn-login">
+            <a href="<?php echo BASE_URL; ?>/pages/login.php" class="btn-login">
                 <i class="fas fa-sign-in-alt"></i> Sign In Again
             </a>
         </div>
