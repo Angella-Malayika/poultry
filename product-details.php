@@ -16,6 +16,17 @@ $sql = "SELECT p.*, c.title as category_title, c.slug as category_slug
 
 $result = mysqli_query($conn, $sql);
 
+// Add this function near the top
+function get_absolute_image_url($image_path) {
+    global $fallback_image;
+    if (empty($image_path)) {
+        return $fallback_image;
+    }
+    if (preg_match('/^(https?:|\/)/i', $image_path)) {
+        return $image_path;
+    }
+    return BASE_URL . '/' . ltrim($image_path, '/');
+}
 // Redirect if product not found
 if (!$result || mysqli_num_rows($result) == 0) {
     header('Location: ' . BASE_URL . '/pages/product.php');
@@ -112,7 +123,7 @@ $benefits = !empty($product['benefits']) ? explode('|', $product['benefits']) : 
             <div class="row">
                 <!-- Product Image -->
                 <div class="col-lg-5 mb-4">
-                    <img src="<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-detail-image">
+                    <img src="<?php echo get_absolute_image_url($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-detail-image">
                 </div>
 
                 <!-- Product Info -->

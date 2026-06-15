@@ -1,5 +1,5 @@
 <?php
-// Admin/upload_photo.php – Fixed paths using BASE_URL from config.php
+// Admin/upload_photo.php – Fixed redirect for new products
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/auth_required.php';
 
@@ -295,7 +295,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         if (is_file($old_path)) {
                                             @unlink($old_path);
                                         }
-                                    }   
+                                    }
                                     $stmt->close();
                                     header('Location: ' . BASE_URL . '/Admin/upload_photo.php?success=1&updated=1');
                                     exit();
@@ -337,7 +337,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                 if ($stmt->execute()) {
                                     $stmt->close();
-                                    header('Location: ' . BASE_URL . '/upload_photo.php?success=1');
+                                    // FIXED: Correct redirect to Admin/upload_photo.php
+                                    header('Location: ' . BASE_URL . '/Admin/upload_photo.php?success=1');
                                     exit();
                                 }
 
@@ -394,6 +395,7 @@ if ($products_result) {
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 <style>
+    /* (all your existing styles – unchanged) */
     :root {
         --leaf-900: #0f3c2a;
         --leaf-700: #1f6b3f;
@@ -401,9 +403,8 @@ if ($products_result) {
         --ink: #173026;
     }
     body {
-        background:
-            radial-gradient(circle at top left, rgba(31, 107, 63, 0.12), transparent 34%),
-            linear-gradient(180deg, #f7fbf8 0%, #eef5ef 100%);
+        background: radial-gradient(circle at top left, rgba(31, 107, 63, 0.12), transparent 34%),
+                    linear-gradient(180deg, #f7fbf8 0%, #eef5ef 100%);
         color: var(--ink);
     }
     .sidebar {
@@ -424,22 +425,14 @@ if ($products_result) {
         background: rgba(255,255,255,0.14);
         color: #fff;
     }
-    .sidebar .nav-link i {
-        margin-right: 10px;
-        font-size: 1.05rem;
-    }
+    .sidebar .nav-link i { margin-right: 10px; font-size: 1.05rem; }
     .brand {
         padding: 10px 20px 30px;
         border-bottom: 1px solid rgba(255,255,255,0.15);
         margin-bottom: 15px;
     }
-    .brand h4 {
-        margin: 0;
-        font-weight: 700;
-    }
-    .brand small {
-        opacity: 0.7;
-    }
+    .brand h4 { margin: 0; font-weight: 700; }
+    .brand small { opacity: 0.7; }
     .top-bar {
         background: rgba(255,255,255,0.92);
         backdrop-filter: blur(10px);
@@ -502,9 +495,7 @@ if ($products_result) {
         font-weight: 800;
         margin-bottom: 0.35rem;
     }
-    .section-copy {
-        color: #5f6d62;
-    }
+    .section-copy { color: #5f6d62; }
     .upload-tag {
         background: var(--leaf-100);
         color: var(--leaf-700);
@@ -608,24 +599,9 @@ if ($products_result) {
             <?php endif; ?>
 
             <div class="row g-4 mb-4">
-                <div class="col-sm-4">
-                    <div class="mini-stat">
-                        <span class="value"><?php echo count($categories); ?></span>
-                        <div class="label">Active categories</div>
-                    </div>
-                </div>
-                <div class="col-sm-4">
-                    <div class="mini-stat">
-                        <span class="value"><?php echo count($recent_products); ?></span>
-                        <div class="label">Recent products shown</div>
-                    </div>
-                </div>
-                <div class="col-sm-4">
-                    <div class="mini-stat">
-                        <span class="value">Auto</span>
-                        <div class="label">Public pages update on save</div>
-                    </div>
-                </div>
+                <div class="col-sm-4"><div class="mini-stat"><span class="value"><?php echo count($categories); ?></span><div class="label">Active categories</div></div></div>
+                <div class="col-sm-4"><div class="mini-stat"><span class="value"><?php echo count($recent_products); ?></span><div class="label">Recent products shown</div></div></div>
+                <div class="col-sm-4"><div class="mini-stat"><span class="value">Auto</span><div class="label">Public pages update on save</div></div></div>
             </div>
 
             <div class="row g-4 align-items-start">
@@ -633,10 +609,7 @@ if ($products_result) {
                     <div class="card form-card">
                         <div class="card-body p-4 p-lg-5">
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
-                                <div>
-                                    <h2 class="section-title h4 mb-1">Product details</h2>
-                                    <p class="section-copy mb-0">Fields marked as important should be filled in for the product to display well on the storefront.</p>
-                                </div>
+                                <div><h2 class="section-title h4 mb-1">Product details</h2><p class="section-copy mb-0">Fields marked as important should be filled in for the product to display well on the storefront.</p></div>
                                 <span class="upload-tag"><i class="bi bi-cloud-arrow-up me-1"></i> Upload image + save product</span>
                             </div>
 
@@ -650,9 +623,7 @@ if ($products_result) {
                                     <select name="category_id" id="category_id" class="form-select" required>
                                         <option value="">Choose category</option>
                                         <?php foreach ($categories as $category): ?>
-                                            <option value="<?php echo (int) $category['id']; ?>" <?php echo ((string) $form['category_id'] === (string) $category['id']) ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($category['title']); ?>
-                                            </option>
+                                            <option value="<?php echo (int) $category['id']; ?>" <?php echo ((string) $form['category_id'] === (string) $category['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($category['title']); ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -673,9 +644,7 @@ if ($products_result) {
                                     <input type="file" name="image" id="image" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp" <?php echo $is_editing ? '' : 'required'; ?>>
                                     <small class="text-muted">Accepted formats: JPG, PNG, GIF, WEBP. Maximum size: 5MB. <?php echo $is_editing ? 'Leave blank to keep the current image.' : ''; ?></small>
                                     <?php if ($is_editing && $current_product_image !== ''): ?>
-                                        <div class="mt-2">
-                                            <img src="<?php echo BASE_URL; ?>/<?php echo ltrim($current_product_image, '/'); ?>" alt="Current product" class="img-fluid rounded" style="max-height: 140px;">
-                                        </div>
+                                        <div class="mt-2"><img src="<?php echo BASE_URL; ?>/<?php echo ltrim($current_product_image, '/'); ?>" alt="Current product" class="img-fluid rounded" style="max-height: 140px;"></div>
                                     <?php endif; ?>
                                 </div>
                                 <div class="col-12">
@@ -703,9 +672,7 @@ if ($products_result) {
                                         <input class="form-check-input" type="checkbox" name="is_active" id="is_active" <?php echo $form['is_active'] === '1' ? 'checked' : ''; ?>>
                                         <label class="form-check-label" for="is_active">Publish immediately</label>
                                     </div>
-                                    <button type="submit" class="btn btn-success btn-lg px-4">
-                                        <i class="bi bi-save2 me-2"></i><?php echo $is_editing ? 'Update Product' : 'Save Product'; ?>
-                                    </button>
+                                    <button type="submit" class="btn btn-success btn-lg px-4"><i class="bi bi-save2 me-2"></i><?php echo $is_editing ? 'Update Product' : 'Save Product'; ?></button>
                                 </div>
                             </form>
                         </div>
@@ -717,7 +684,6 @@ if ($products_result) {
                         <div class="card-body p-4">
                             <h3 class="h5 section-title mb-1">Recent products</h3>
                             <p class="section-copy mb-4">These are the newest items already visible to customers.</p>
-
                             <?php if (!empty($recent_products)): ?>
                                 <div class="row g-3">
                                     <?php foreach ($recent_products as $product): ?>
@@ -741,7 +707,6 @@ if ($products_result) {
                             <?php endif; ?>
                         </div>
                     </div>
-
                     <div class="alert alert-success border-0 shadow-sm mb-0">
                         <strong>Tip:</strong> Keep the product name clear and the description short. Customers will see this content on the public store pages immediately.
                     </div>
@@ -754,51 +719,23 @@ if ($products_result) {
                         <h4 class="mb-0">Manage products</h4>
                         <span class="text-muted">Latest 20 items</span>
                     </div>
-
                     <?php if (!empty($products)): ?>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-success">
-                                    <tr>
-                                        <th>Image</th>
-                                        <th>Name</th>
-                                        <th>Category</th>
-                                        <th>Status</th>
-                                        <th>Created</th>
-                                        <th>Actions</th>
-                                    </tr>
+                                    <tr><th>Image</th><th>Name</th><th>Category</th><th>Status</th><th>Created</th><th>Actions</th></tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($products as $product): ?>
                                         <tr>
-                                            <td style="width: 90px;">
-                                                <img src="<?php echo BASE_URL; ?>/<?php echo ltrim(!empty($product['image']) ? $product['image'] : 'images/fs.broiler-chicks.avif', '/'); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-fluid rounded" style="max-height: 60px;">
-                                            </td>
-                                            <td>
-                                                <div class="fw-bold"><?php echo htmlspecialchars($product['name']); ?></div>
-                                                <small class="text-muted"><?php echo htmlspecialchars($product['slug']); ?></small>
-                                            </td>
+                                            <td style="width:90px"><img src="<?php echo BASE_URL; ?>/<?php echo ltrim(!empty($product['image']) ? $product['image'] : 'images/fs.broiler-chicks.avif', '/'); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-fluid rounded" style="max-height:60px"></td>
+                                            <td><div class="fw-bold"><?php echo htmlspecialchars($product['name']); ?></div><small class="text-muted"><?php echo htmlspecialchars($product['slug']); ?></small></td>
                                             <td><?php echo htmlspecialchars($product['category_title'] ?? 'Uncategorized'); ?></td>
-                                            <td>
-                                                <?php if ((int) ($product['is_active'] ?? 0) === 1): ?>
-                                                    <span class="badge bg-success">Active</span>
-                                                <?php else: ?>
-                                                    <span class="badge bg-secondary">Hidden</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <?php echo htmlspecialchars(date('M d, Y', strtotime((string) $product['created_at']))); ?>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex flex-wrap gap-2">
-                                                    <a href="<?php echo BASE_URL; ?>/Admin/upload_photo.php?edit=<?php echo (int) $product['id']; ?>" class="btn btn-outline-success btn-sm">Edit</a>
-                                                    <form method="POST" class="m-0" onsubmit="return confirm('Delete this product?');">
-                                                        <input type="hidden" name="product_action" value="delete">
-                                                        <input type="hidden" name="product_id" value="<?php echo (int) $product['id']; ?>">
-                                                        <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                                            <td><?php if ((int)($product['is_active'] ?? 0) === 1): ?><span class="badge bg-success">Active</span><?php else: ?><span class="badge bg-secondary">Hidden</span><?php endif; ?></td>
+                                            <td><?php echo htmlspecialchars(date('M d, Y', strtotime((string) $product['created_at']))); ?></td>
+                                            <td><div class="d-flex flex-wrap gap-2"><a href="<?php echo BASE_URL; ?>/Admin/upload_photo.php?edit=<?php echo (int) $product['id']; ?>" class="btn btn-outline-success btn-sm">Edit</a>
+                                                <form method="POST" class="m-0" onsubmit="return confirm('Delete this product?');"><input type="hidden" name="product_action" value="delete"><input type="hidden" name="product_id" value="<?php echo (int) $product['id']; ?>"><button type="submit" class="btn btn-outline-danger btn-sm">Delete</button></form>
+                                            </div></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -811,10 +748,8 @@ if ($products_result) {
             </div>
         </div>
     </div>
-
 </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

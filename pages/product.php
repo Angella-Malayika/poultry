@@ -1,16 +1,27 @@
 <?php
-// pages/product.php – Fixed all links, uses only styles.css
+// pages/product.php – Fixed image paths (absolute using BASE_URL)
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/connection.php';
 
 $page_title = 'Products | Kalungu Quality Feeds';
 $fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
 
+// Helper function to get absolute image URL
+function get_absolute_image_url($image_path) {
+    global $fallback_image;
+    if (empty($image_path)) {
+        return $fallback_image;
+    }
+    // If it already starts with http://, https://, or / (absolute), return as is
+    if (preg_match('/^(https?:|\/)/i', $image_path)) {
+        return $image_path;
+    }
+    // Otherwise prepend BASE_URL and a slash
+    return BASE_URL . '/' . ltrim($image_path, '/');
+}
+
 $categories = [];
-$categories_result = mysqli_query(
-    $conn,
-    "SELECT id, slug, title, description, icon FROM categories WHERE is_active = 1 ORDER BY sort_order ASC, title ASC"
-);
+$categories_result = mysqli_query($conn, "SELECT id, slug, title, description, icon FROM categories WHERE is_active = 1 ORDER BY sort_order ASC, title ASC");
 if ($categories_result) {
     while ($category = mysqli_fetch_assoc($categories_result)) {
         $categories[] = $category;
@@ -37,37 +48,28 @@ $total_products = count($all_products);
 $total_categories = count($categories);
 $latest_update = !empty($all_products) ? date('M j, Y', strtotime($all_products[0]['created_at'])) : 'Today';
 
-function truncate_text($text, $length = 120)
-{
+function truncate_text($text, $length = 120) {
     $text = trim((string) $text);
-    if ($text === '') {
-        return 'Fresh stock available in the store.';
-    }
+    if ($text === '') return 'Fresh stock available in the store.';
     if (function_exists('mb_strlen') && function_exists('mb_substr')) {
-        if (mb_strlen($text) <= $length) {
-            return $text;
-        }
+        if (mb_strlen($text) <= $length) return $text;
         return rtrim(mb_substr($text, 0, $length - 3)) . '...';
     }
-    if (strlen($text) <= $length) {
-        return $text;
-    }
+    if (strlen($text) <= $length) return $text;
     return rtrim(substr($text, 0, $length - 3)) . '...';
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($page_title); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <!-- Single CSS file – contains all header, footer, and product styles -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/styles.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Additional product-specific styles (keep as needed) */
+        /* (keep all your existing styles – unchanged) */
         body {
             background: radial-gradient(circle at top left, rgba(46,125,50,0.08), transparent 32%),
                         linear-gradient(180deg, #fbfcf7 0%, #ffffff 42%, #f7faf4 100%);
@@ -97,7 +99,6 @@ function truncate_text($text, $length = 120)
         @media (max-width: 768px) { .store-hero { padding: 2rem 0; } }
     </style>
 </head>
-
 <body>
     <?php include dirname(__DIR__) . '/includes/header.php'; ?>
 
@@ -155,7 +156,8 @@ function truncate_text($text, $length = 120)
                         <?php foreach ($recent_products as $product): ?>
                             <div class="col-sm-6 col-lg-4">
                                 <div class="product-card">
-                                    <img src="<?php echo htmlspecialchars(!empty($product['image']) ? $product['image'] : $fallback_image); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-image">
+                                    <!-- Fixed image URL: use get_absolute_image_url helper -->
+                                    <img src="<?php echo get_absolute_image_url($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-image">
                                     <div class="product-body d-flex flex-column">
                                         <div class="d-flex flex-wrap gap-2">
                                             <span class="category-pill"><i class="fa-solid fa-tag"></i> <?php echo htmlspecialchars($product['category_title']); ?></span>
@@ -167,7 +169,6 @@ function truncate_text($text, $length = 120)
                                         <p class="text-secondary mb-4"><?php echo htmlspecialchars(truncate_text($product['description'], 130)); ?></p>
                                         <div class="product-actions mt-auto">
                                             <a class="product-link" href="<?php echo BASE_URL; ?>/product-details.php?product=<?php echo urlencode($product['slug']); ?>">View details</a>
-                                            <!-- FIXED: correct add-to-cart link -->
                                             <a class="btn-cart-action" href="<?php echo BASE_URL; ?>/add_to_cart.php?product=<?php echo urlencode($product['slug']); ?>">
                                                 <i class="fa-solid fa-cart-plus me-1"></i>Add to Cart
                                             </a>
@@ -200,7 +201,8 @@ function truncate_text($text, $length = 120)
                         <?php foreach ($all_products as $product): ?>
                             <div class="col-sm-6 col-lg-4 col-xl-3">
                                 <div class="product-card">
-                                    <img src="<?php echo htmlspecialchars(!empty($product['image']) ? $product['image'] : $fallback_image); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-image">
+                                    <!-- Fixed image URL -->
+                                    <img src="<?php echo get_absolute_image_url($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-image">
                                     <div class="product-body d-flex flex-column">
                                         <span class="category-pill"><i class="fa-solid fa-layer-group"></i> <?php echo htmlspecialchars($product['category_title']); ?></span>
                                         <h3 class="h5 product-title"><?php echo htmlspecialchars($product['name']); ?></h3>

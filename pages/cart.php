@@ -1,11 +1,24 @@
 <?php
-// pages/cart.php – Fixed all URL redirections
+// pages/cart.php – Fixed image URLs using BASE_URL
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/auth_required.php';
 require_once dirname(__DIR__) . '/connection.php';
 require_once __DIR__ . '/../includes/cart_helpers.php';
 
-// Fix redirect after removing an item – go to cart.php inside pages folder
+// Helper to convert relative image path to absolute URL
+function get_absolute_image_url($image_path) {
+    global $fallback_image;
+    if (empty($image_path)) {
+        return $fallback_image;
+    }
+    // If already absolute (starts with http://, https://, or /), return as is
+    if (preg_match('/^(https?:|\/)/i', $image_path)) {
+        return $image_path;
+    }
+    // Otherwise prepend BASE_URL and a slash
+    return BASE_URL . '/' . ltrim($image_path, '/');
+}
+
 if (isset($_GET['remove'])) {
     poultry_cart_remove_item((string) $_GET['remove']);
     $_SESSION['cart_success'] = 'Item removed from your cart.';
@@ -13,7 +26,6 @@ if (isset($_GET['remove'])) {
     exit();
 }
 
-// Fix redirect after clearing cart
 if (isset($_GET['clear'])) {
     poultry_cart_clear();
     $_SESSION['cart_success'] = 'Your cart has been cleared.';
@@ -57,7 +69,6 @@ $fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Cart | Kalungu Quality Feeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <!-- Use single styles.css instead of head.css and foot.css -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/styles.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -128,7 +139,6 @@ $fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
                                     <p class="text-muted mb-0"><?php echo (int) $distinct_items; ?> distinct item(s) in cart</p>
                                 </div>
                                 <?php if ($distinct_items > 0): ?>
-                                    <!-- Fix clear cart link -->
                                     <a class="btn btn-outline-danger" href="<?php echo BASE_URL; ?>/pages/cart.php?clear=1"><i class="fa-solid fa-trash me-2"></i>Clear Cart</a>
                                 <?php endif; ?>
                             </div>
@@ -136,14 +146,14 @@ $fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
                             <?php if (!empty($cart_rows)): ?>
                                 <?php foreach ($cart_rows as $row): ?>
                                     <div class="cart-item d-flex flex-column flex-md-row gap-3 align-items-md-center">
-                                        <img src="<?php echo htmlspecialchars(!empty($row['image']) ? $row['image'] : $fallback_image); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>" class="cart-thumb">
+                                        <!-- FIXED: use get_absolute_image_url() for correct image path -->
+                                        <img src="<?php echo get_absolute_image_url($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>" class="cart-thumb">
                                         <div class="flex-grow-1">
                                             <h3 class="h5 mb-1"><?php echo htmlspecialchars($row['name']); ?></h3>
                                             <p class="text-muted mb-0 small"><?php echo htmlspecialchars($row['description'] ?? ''); ?></p>
                                         </div>
                                         <div class="text-md-end">
                                             <div class="fw-bold text-success">Qty: <?php echo (int) $row['quantity']; ?></div>
-                                            <!-- Fix remove item link -->
                                             <a class="btn btn-sm btn-outline-danger mt-2" href="<?php echo BASE_URL; ?>/pages/cart.php?remove=<?php echo urlencode($row['slug']); ?>">
                                                 <i class="fa-solid fa-xmark me-1"></i>Remove
                                             </a>
@@ -170,11 +180,9 @@ $fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
                             <span class="text-muted">Total items chosen</span>
                             <strong><?php echo (int) $total_items; ?></strong>
                         </div>
-                        <!-- Fix proceed to order link -->
                         <a href="<?php echo BASE_URL; ?>/pages/order.php" class="btn btn-success w-100 mb-2 <?php echo $distinct_items === 0 ? 'disabled' : ''; ?>">
                             <i class="fa-solid fa-receipt me-2"></i>Proceed to Order
                         </a>
-                        <!-- Fix continue shopping link -->
                         <a href="<?php echo BASE_URL; ?>/pages/product.php" class="btn btn-outline-success w-100">
                             <i class="fa-solid fa-bag-shopping me-2"></i>Continue Shopping
                         </a>

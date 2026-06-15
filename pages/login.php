@@ -309,10 +309,10 @@ if (isset($_POST['login'])) {
                     <i class="fas fa-sign-in-alt"></i> SignIn
                 </button>
             </form>
-
+    
             <div class="text-center">
                 <p>Don't have an account? <a href="<?php echo BASE_URL; ?>/pages/signup.php">Sign up here</a></p>
-                <a href="<?php echo BASE_URL; ?>./../index.php" class="back-link"><i class="fas fa-home"></i> Back to Home</a>
+                <a href="<?php echo BASE_URL; ?>/index.php" class="back-link"><i class="fas fa-home"></i> Back to Home</a>
             </div>
         </div>
     </main>
