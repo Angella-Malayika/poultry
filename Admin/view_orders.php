@@ -242,13 +242,13 @@ $status_labels = [
                     <small>Admin Panel</small>
                 </div>
                 <nav class="nav flex-column">
-                    <a class="nav-link" href="<?php echo BASE_URL; ?>/admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
-                    <a class="nav-link" href="<?php echo BASE_URL; ?>/upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
-                    <a class="nav-link active" href="<?php echo BASE_URL; ?>/view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
-                    <a class="nav-link" href="<?php echo BASE_URL; ?>/view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
-                    <a class="nav-link" href="<?php echo BASE_URL; ?>/view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
-                    <a class="nav-link" href="<?php echo BASE_URL; ?>/login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
-                    <a class="nav-link text-danger mt-3" href="<?php echo BASE_URL; ?>/adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
+                    <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+                    <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
+                    <a class="nav-link active" href="<?php echo BASE_URL; ?>/Admin/view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
+                    <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
+                    <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
+                    <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
+                    <a class="nav-link text-danger mt-3" href="<?php echo BASE_URL; ?>/Admin/adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
                 </nav>
             </div>
 

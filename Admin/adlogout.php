@@ -1,5 +1,5 @@
 <?php
-// Admin/adlogout.php – Fixed paths using BASE_URL from config.php
+// Admin/adlogout.php – Fixed redirect to login page
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/connection.php';
 
@@ -23,7 +23,7 @@ unset($_SESSION['cart']);
 // Destroy the session
 session_destroy();
 
-// Redirect to login page
-header('Location: ' . BASE_URL . '/../pages/login.php');
+// Redirect to main login page (inside pages folder)
+header('Location: ' . BASE_URL . '/pages/login.php');
 exit();
 ?>

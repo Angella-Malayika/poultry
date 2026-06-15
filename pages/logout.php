@@ -164,7 +164,7 @@ session_destroy();
         </div>
         <p>We hope to see you soon!</p>
         <div class="btn-group-logout">
-            <a href="<?php echo BASE_URL; ?>./../index.php" class="btn-home">
+            <a href="<?php echo BASE_URL; ?>/index.php" class="btn-home">
                 <i class="fas fa-home"></i> Back to Home
             </a>
             <a href="<?php echo BASE_URL; ?>/pages/login.php" class="btn-login">

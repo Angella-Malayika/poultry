@@ -365,10 +365,10 @@ if ($delivery_date !== '') {
         </div>
 
         <div class="action-buttons">
-            <a href="<?php echo BASE_URL; ?>/view_orders.php" class="btn btn-primary">
+            <a href="<?php echo BASE_URL; ?>/Admin/view_orders.php" class="btn btn-primary">
                 <i class="fas fa-list"></i> View All Orders
             </a>
-            <a href="<?php echo BASE_URL; ?>/admin.php" class="btn btn-secondary">
+            <a href="<?php echo BASE_URL; ?>/Admin/admin.php" class="btn btn-secondary">
                 <i class="fas fa-home"></i> Dashboard
             </a>
         </div>

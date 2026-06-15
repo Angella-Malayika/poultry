@@ -246,7 +246,7 @@ if (isset($_POST['signup'])) {
         
         <div class="text-center mt-3">
             <p>Already have an account? <a href="<?php echo BASE_URL; ?>./login.php">Login here</a></p>
-            <a href="<?php echo BASE_URL; ?>/../index.php" class="text-muted"><i class="fas fa-home"></i> Back to Home</a>
+            <a href="<?php echo BASE_URL; ?>/index.php" class="text-muted"><i class="fas fa-home"></i> Back to Home</a>
         </div>
     </div>
     

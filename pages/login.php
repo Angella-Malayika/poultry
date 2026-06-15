@@ -100,7 +100,7 @@ if (isset($_POST['login'])) {
 
                         // Redirect using BASE_URL
                         if ($role === 'admin') {
-                            header("Location: " . BASE_URL . "./../Admin/admin.php");
+                            header("Location: " . BASE_URL . "./Admin/admin.php");
                         } else {
                             header("Location: " . BASE_URL . "./index.php");
                         }

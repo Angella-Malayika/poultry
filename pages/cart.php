@@ -1,21 +1,23 @@
 <?php
-// pages/cart.php – Fixed paths using BASE_URL from config.php
+// pages/cart.php – Fixed all URL redirections
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/auth_required.php';
 require_once dirname(__DIR__) . '/connection.php';
 require_once __DIR__ . '/../includes/cart_helpers.php';
 
+// Fix redirect after removing an item – go to cart.php inside pages folder
 if (isset($_GET['remove'])) {
     poultry_cart_remove_item((string) $_GET['remove']);
     $_SESSION['cart_success'] = 'Item removed from your cart.';
-    header('Location: ' . BASE_URL . '/cart.php');
+    header('Location: ' . BASE_URL . '/pages/cart.php');
     exit();
 }
 
+// Fix redirect after clearing cart
 if (isset($_GET['clear'])) {
     poultry_cart_clear();
     $_SESSION['cart_success'] = 'Your cart has been cleared.';
-    header('Location: ' . BASE_URL . '/cart.php');
+    header('Location: ' . BASE_URL . '/pages/cart.php');
     exit();
 }
 
@@ -55,9 +57,9 @@ $fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Cart | Kalungu Quality Feeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/head.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/foot.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <!-- Use single styles.css instead of head.css and foot.css -->
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(180deg, #f7faf4 0%, #ffffff 100%);
@@ -126,7 +128,8 @@ $fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
                                     <p class="text-muted mb-0"><?php echo (int) $distinct_items; ?> distinct item(s) in cart</p>
                                 </div>
                                 <?php if ($distinct_items > 0): ?>
-                                    <a class="btn btn-outline-danger" href="<?php echo BASE_URL; ?>/cart.php?clear=1"><i class="fa-solid fa-trash me-2"></i>Clear Cart</a>
+                                    <!-- Fix clear cart link -->
+                                    <a class="btn btn-outline-danger" href="<?php echo BASE_URL; ?>/pages/cart.php?clear=1"><i class="fa-solid fa-trash me-2"></i>Clear Cart</a>
                                 <?php endif; ?>
                             </div>
 
@@ -140,7 +143,8 @@ $fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
                                         </div>
                                         <div class="text-md-end">
                                             <div class="fw-bold text-success">Qty: <?php echo (int) $row['quantity']; ?></div>
-                                            <a class="btn btn-sm btn-outline-danger mt-2" href="<?php echo BASE_URL; ?>/cart.php?remove=<?php echo urlencode($row['slug']); ?>">
+                                            <!-- Fix remove item link -->
+                                            <a class="btn btn-sm btn-outline-danger mt-2" href="<?php echo BASE_URL; ?>/pages/cart.php?remove=<?php echo urlencode($row['slug']); ?>">
                                                 <i class="fa-solid fa-xmark me-1"></i>Remove
                                             </a>
                                         </div>
@@ -166,10 +170,12 @@ $fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
                             <span class="text-muted">Total items chosen</span>
                             <strong><?php echo (int) $total_items; ?></strong>
                         </div>
-                        <a href="<?php echo BASE_URL; ?>/order.php" class="btn btn-success w-100 mb-2 <?php echo $distinct_items === 0 ? 'disabled' : ''; ?>">
+                        <!-- Fix proceed to order link -->
+                        <a href="<?php echo BASE_URL; ?>/pages/order.php" class="btn btn-success w-100 mb-2 <?php echo $distinct_items === 0 ? 'disabled' : ''; ?>">
                             <i class="fa-solid fa-receipt me-2"></i>Proceed to Order
                         </a>
-                        <a href="<?php echo BASE_URL; ?>/product.php" class="btn btn-outline-success w-100">
+                        <!-- Fix continue shopping link -->
+                        <a href="<?php echo BASE_URL; ?>/pages/product.php" class="btn btn-outline-success w-100">
                             <i class="fa-solid fa-bag-shopping me-2"></i>Continue Shopping
                         </a>
                     </div>
@@ -179,6 +185,6 @@ $fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
     </section>
 
     <?php include dirname(__DIR__) . '/includes/footer.php'; ?>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
