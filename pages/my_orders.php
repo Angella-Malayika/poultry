@@ -1,14 +1,15 @@
 <?php
-session_start();
-require_once 'auth_required.php';
-include("connection.php");
+// pages/my_orders.php – Fixed paths using BASE_URL from config.php
+require_once dirname(__DIR__) . '/config.php';
+require_once dirname(__DIR__) . '/auth_required.php';
+require_once dirname(__DIR__) . '/connection.php';
 
 // Fetch current user's orders with their email
-$user_id = $_SESSION['user_id'];
+$user_id = (int) $_SESSION['user_id'];
 $sql = "SELECT o.*, u.email
         FROM orders o
-        JOIN users u ON o.user_id = u.user_id
-        WHERE o.user_id = '$user_id'
+        JOIN users u ON o.user_id = u.id
+        WHERE o.user_id = $user_id
         ORDER BY o.order_date DESC";
 
 $result = mysqli_query($conn, $sql);
@@ -27,7 +28,7 @@ if ($result) {
     <meta name="google-site-verification" content="DxOSWhae3DL7OIIjettiAneNnAyV8CYP49sqXRnojeg" />
     <title>My Orders | Kalungu Quality Feeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="joy.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/joy.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -109,12 +110,12 @@ if ($result) {
     </style>
 </head>
 <body>
-<?php include 'header.php'; ?>
+<?php include dirname(__DIR__) . '/includes/header.php'; ?>
 
 <div class="orders-container">
     <div class="container">
         <div class="back-link">
-            <a href="index.php" class="btn btn-outline-success">
+            <a href="<?php echo BASE_URL; ?>/index.php" class="btn btn-outline-success">
                 <i class="fas fa-arrow-left"></i> Back to Home
             </a>
         </div>
@@ -161,12 +162,10 @@ if ($result) {
                             <div class="detail-label"><i class="fas fa-user"></i> Full Name</div>
                             <div class="detail-value"><?php echo htmlspecialchars($order['full_name']); ?></div>
                         </div>
-
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-envelope"></i> Email</div>
                             <div class="detail-value"><?php echo htmlspecialchars($order['email']); ?></div>
                         </div>
-
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-phone"></i> Phone</div>
                             <div class="detail-value"><?php echo htmlspecialchars($order['phone']); ?></div>
@@ -178,12 +177,10 @@ if ($result) {
                             <div class="detail-label"><i class="fas fa-cube"></i> Product</div>
                             <div class="detail-value"><?php echo htmlspecialchars($order['product']); ?></div>
                         </div>
-
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-boxes"></i> Quantity</div>
                             <div class="detail-value"><?php echo htmlspecialchars($order['quantity']); ?></div>
                         </div>
-
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-calendar-alt"></i> Delivery Date</div>
                             <div class="detail-value"><?php echo date('M d, Y', strtotime($order['delivery_date'])); ?></div>
@@ -203,7 +200,7 @@ if ($result) {
                 <i class="fas fa-inbox"></i>
                 <h3>No Orders Yet</h3>
                 <p class="text-muted">You haven't placed any orders yet. Start shopping today!</p>
-                <a href="order.php" class="btn btn-success mt-3">
+                <a href="<?php echo BASE_URL; ?>/pages/order.php" class="btn btn-success mt-3">
                     <i class="fas fa-shopping-cart"></i> Place an Order
                 </a>
             </div>
@@ -211,7 +208,7 @@ if ($result) {
     </div>
 </div>
 
-<?php include 'footer.php'; ?>
+<?php include dirname(__DIR__) . '/includes/footer.php'; ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

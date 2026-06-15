@@ -1,12 +1,14 @@
 <?php
-require_once 'auth_required.php';
-include 'connection.php';
-require_once __DIR__ . '/cart_helpers.php';
+// add_to_cart.php – Fixed paths using BASE_URL from config.php
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/auth_required.php';
+require_once __DIR__ . '/connection.php';
+require_once __DIR__ . '/includes/cart_helpers.php';
 
 $slug = trim((string) ($_GET['product'] ?? $_POST['product'] ?? ''));
 
 if ($slug === '') {
-    header('Location: product.php');
+    header('Location: ' . BASE_URL . '/pages/product.php');
     exit();
 }
 
@@ -19,13 +21,13 @@ if ($stmt) {
         poultry_cart_add_item($slug, 1);
         $_SESSION['cart_success'] = 'Product added to your cart.';
         $stmt->close();
-        header('Location: cart.php');
+        header('Location: ' . BASE_URL . '/pages/cart.php');
         exit();
     }
-
     $stmt->close();
 }
 
 $_SESSION['cart_error'] = 'The selected product could not be added to the cart.';
-header('Location: product.php');
+header('Location: ' . BASE_URL . '/pages/product.php');
 exit();
+?>

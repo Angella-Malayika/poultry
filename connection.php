@@ -1,4 +1,7 @@
 <?php
+// connection.php
+require_once __DIR__ . '/config.php';  // <-- Add this line at the top
+
 // Default (local) settings
 $servername = "localhost";
 $username = "root";
@@ -8,7 +11,6 @@ $port = 3306;
 
 // If running on your InfinityFree host, switch to those credentials
 if (isset($_SERVER['HTTP_HOST']) && (strpos($_SERVER['HTTP_HOST'], 'howto.rocks') !== false || strpos($_SERVER['HTTP_HOST'], 'infinityfree') !== false)) {
-    // $servername = 'sql305.infinityfree.com'; 
     $servername = 'sql304.infinityfree.com';
     $username = 'if0_42080277';
     $password = 'log80ang';

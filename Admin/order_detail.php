@@ -1,11 +1,18 @@
 <?php
-require_once __DIR__ . '/../auth_required.php';
+// Admin/order_detail.php – Fixed paths using BASE_URL from config.php
+require_once dirname(__DIR__) . '/config.php';
+require_once dirname(__DIR__) . '/auth_required.php';
+require_once dirname(__DIR__) . '/connection.php';
 
-include 'connection.php';
+// Ensure only admin can access
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header('Location: ' . BASE_URL . '/pages/login.php');
+    exit();
+}
 
 $order_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 if ($order_id <= 0) {
-    header('Location: view_orders.php');
+    header('Location: ' . BASE_URL . '/view_orders.php');
     exit();
 }
 
@@ -64,16 +71,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
             $message_type = 'danger';
         }
     } else {
-            if ($can_update) {
-                $message = 'Invalid status selected.';
-                $message_type = 'danger';
-            }
+        if ($can_update) {
+            $message = 'Invalid status selected.';
+            $message_type = 'danger';
+        }
     }
 }
 
-$stmt = $conn->prepare('SELECT o.*, u.email AS account_email, u.username FROM orders o LEFT JOIN users u ON o.user_id = u.user_id WHERE o.id = ? LIMIT 1');
+$stmt = $conn->prepare('SELECT o.*, u.email AS account_email, u.username FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE o.id = ? LIMIT 1');
 if (!$stmt) {
-    header('Location: view_orders.php');
+    header('Location: ' . BASE_URL . '/view_orders.php');
     exit();
 }
 
@@ -83,7 +90,7 @@ $result = $stmt->get_result();
 
 if (!$result || $result->num_rows === 0) {
     $stmt->close();
-    header('Location: view_orders.php');
+    header('Location: ' . BASE_URL . '/view_orders.php');
     exit();
 }
 
@@ -150,14 +157,12 @@ if ($delivery_date !== '') {
             background-color: #f8f9fa;
             padding: 20px;
         }
-
         .detail-container {
             background: #ffffff;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
-
         .info-card {
             background: #ffffff;
             border: 1px solid #e8ecef;
@@ -166,25 +171,21 @@ if ($delivery_date !== '') {
             border-radius: 10px;
             margin-bottom: 20px;
         }
-
         .info-card h5 {
             margin-bottom: 20px;
             font-weight: 700;
             color: #0f3c2a;
         }
-
         .info-row {
             margin-bottom: 15px;
             padding-bottom: 15px;
             border-bottom: 1px solid #eef2f4;
         }
-
         .info-row:last-child {
             border-bottom: none;
             margin-bottom: 0;
             padding-bottom: 0;
         }
-
         .info-label {
             font-size: 0.8rem;
             color: #6c757d;
@@ -192,14 +193,12 @@ if ($delivery_date !== '') {
             font-weight: 700;
             letter-spacing: 0.4px;
         }
-
         .info-value {
             font-size: 1.05rem;
             font-weight: 500;
             margin-top: 4px;
             color: #1d2a22;
         }
-
         .status-section {
             background: #f8f9fa;
             border: 1px solid #e8ecef;
@@ -207,20 +206,17 @@ if ($delivery_date !== '') {
             border-radius: 10px;
             margin-bottom: 20px;
         }
-
         .status-badge {
             font-size: 1rem;
             padding: 10px 18px;
             border-radius: 999px;
         }
-
         .action-buttons {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-top: 20px;
         }
-
         .quick-actions {
             display: flex;
             flex-wrap: wrap;
@@ -232,7 +228,7 @@ if ($delivery_date !== '') {
 <body>
     <div class="detail-container">
         <div class="mb-4">
-            <a href="view_orders.php" class="btn btn-outline-primary btn-sm">
+            <a href="<?php echo BASE_URL; ?>/view_orders.php" class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-arrow-left"></i> Back to Orders
             </a>
         </div>
@@ -369,10 +365,10 @@ if ($delivery_date !== '') {
         </div>
 
         <div class="action-buttons">
-            <a href="view_orders.php" class="btn btn-primary">
+            <a href="<?php echo BASE_URL; ?>/view_orders.php" class="btn btn-primary">
                 <i class="fas fa-list"></i> View All Orders
             </a>
-            <a href="admin.php" class="btn btn-secondary">
+            <a href="<?php echo BASE_URL; ?>/admin.php" class="btn btn-secondary">
                 <i class="fas fa-home"></i> Dashboard
             </a>
         </div>

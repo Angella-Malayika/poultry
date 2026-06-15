@@ -1,7 +1,10 @@
 <?php
-require_once '../auth_required.php';
-include '../connection.php';
+// pages/order.php – Fixed paths using BASE_URL from config.php
+require_once dirname(__DIR__) . '/config.php';
+require_once dirname(__DIR__) . '/auth_required.php';
+require_once dirname(__DIR__) . '/connection.php';
 require_once __DIR__ . '/../includes/cart_helpers.php';
+
 $message = '';
 $order_placed = false;
 $order_details = [];
@@ -58,17 +61,15 @@ function resolve_product_key($raw_value, $product_options)
     if ($normalized === '') {
         return '';
     }
-
     foreach ($product_options as $key => $label) {
         if ($normalized === strtolower($key) || $normalized === strtolower($label)) {
             return $key;
         }
     }
-
     return '';
 }
 
-$user_name_value =  $_SESSION['username'] ?? '';
+$user_name_value = $_SESSION['username'] ?? '';
 $phone_value = '';
 $address_value = '';
 $delivery_date_value = '';
@@ -86,21 +87,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         if ($resolved_product === '') {
             continue;
         }
-
         $cart_prefill_items[] = [
             'product' => $resolved_product,
             'quantity' => format_quantity_value(max(1, (float) $cart_quantity)),
             'unit' => default_unit_for_product($resolved_product, $product_options),
         ];
     }
-
     if (!empty($cart_prefill_items)) {
         $order_item_inputs = $cart_prefill_items;
     }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
     $user_name_value = trim((string) ($_POST['user_name'] ?? ''));
     $phone_value = trim((string) ($_POST['phone'] ?? ''));
     $address_value = trim((string) ($_POST['address'] ?? ''));
@@ -110,15 +108,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $selected_quantities = $_POST['quantities'] ?? [];
     $selected_units = $_POST['units'] ?? [];
 
-    if (!is_array($selected_products)) {
-        $selected_products = [];
-    }
-    if (!is_array($selected_quantities)) {
-        $selected_quantities = [];
-    }
-    if (!is_array($selected_units)) {
-        $selected_units = [];
-    }
+    if (!is_array($selected_products)) $selected_products = [];
+    if (!is_array($selected_quantities)) $selected_quantities = [];
+    if (!is_array($selected_units)) $selected_units = [];
 
     $order_item_inputs = [];
     $item_totals = [];
@@ -134,9 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $unit_key = default_unit_for_product($product_key, $product_options);
         }
 
-        if ($product_key === '' && $item_quantity <= 0) {
-            continue;
-        }
+        if ($product_key === '' && $item_quantity <= 0) continue;
 
         if ($item_quantity > 0) {
             if ($unit_key === 'kg') {
@@ -159,17 +149,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'unit' => $unit_key,
         ];
 
-        if (!isset($product_options[$product_key]) || !isset($unit_options[$unit_key]) || $item_quantity <= 0) {
-            continue;
-        }
+        if (!isset($product_options[$product_key]) || !isset($unit_options[$unit_key]) || $item_quantity <= 0) continue;
 
         $line_key = $product_key . '|' . $unit_key;
         if (!isset($item_totals[$line_key])) {
-            $item_totals[$line_key] = [
-                'product' => $product_key,
-                'unit' => $unit_key,
-                'quantity' => 0.0,
-            ];
+            $item_totals[$line_key] = ['product' => $product_key, 'unit' => $unit_key, 'quantity' => 0.0];
         }
         $item_totals[$line_key]['quantity'] += $item_quantity;
         $total_quantity += $item_quantity;
@@ -209,20 +193,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user_id = (int) $_SESSION['user_id'];
         $stmt = $conn->prepare("INSERT INTO orders (user_id, full_name, phone, product, quantity, delivery_address, delivery_date)
                 VALUES (?, ?, ?, ?, ?, ?, ?)");
-
         if ($stmt) {
             $stmt->bind_param('isssdss', $user_id, $user_name_value, $phone_value, $product_summary, $total_quantity_value, $address_value, $delivery_date_value);
             if ($stmt->execute()) {
                 $order_placed = true;
                 $order_id = mysqli_insert_id($conn);
-
-                $fetch_sql = "SELECT o.*, u.email FROM orders o JOIN users u ON o.user_id = u.user_id WHERE o.id = '$order_id'";
+                $fetch_sql = "SELECT o.*, u.email FROM orders o JOIN users u ON o.user_id = u.id WHERE o.id = '$order_id'";
                 $fetch_result = mysqli_query($conn, $fetch_sql);
                 if ($fetch_result && mysqli_num_rows($fetch_result) > 0) {
                     $order_details = mysqli_fetch_assoc($fetch_result);
-
-                    // Send order confirmation email
-                    require_once 'email_config.php';
+                    require_once dirname(__DIR__) . '/email_config.php';
                     sendOrderConfirmationEmail($order_details);
                     poultry_cart_clear();
                 }
@@ -238,22 +218,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="DxOSWhae3DL7OIIjettiAneNnAyV8CYP49sqXRnojeg" />
     <title>Place an Order | Kalungu Quality Feeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="../assets/joy.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/joy.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <style>
+        .order-hero {
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: #fff;
+            padding: 3rem 0;
+            text-align: center;
+        }
+        .order-section {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        button[type="submit"] {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background: #1b5e20;
+        }
+        .info-box {
+            background: #f9fbe7;
+            border-left: 4px solid #2e7d32;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+        }
+        .info-box h4 {
+            color: #2e7d32;
+            margin-bottom: 0.5rem;
+        }
+        .remove-product-row {
+            margin-top: 0.5rem;
+        }
+        @media (max-width: 768px) {
+            .order-section { padding: 1rem; }
+        }
     </style>
 </head>
-
 <body>
-    <?php include '../includes/header.php'; ?>
-    <!-- Order Hero Section -->
+    <?php include dirname(__DIR__) . '/includes/header.php'; ?>
+    
     <section class="order-hero">
         <div class="container">
             <h1><i class="fas fa-shopping-cart me-2"></i>Place Your Order</h1>
@@ -261,13 +300,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </section>
 
-    <!-- Main Order Section -->
     <section class="py-4">
         <div class="container">
-            <!-- Breadcrumb -->
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+                    <li class="breadcrumb-item"><a href="<?php echo BASE_URL; ?>/index.php">Home</a></li>
                     <li class="breadcrumb-item active">Place Order</li>
                 </ol>
             </nav>
@@ -275,124 +312,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="row">
                 <div class="col-lg-8">
                     <?php if ($order_placed && !empty($order_details)): ?>
-                        <!-- Order Confirmation Section -->
-                        <section class="order-section">
+                        <div class="order-section">
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
                                 <i class="fas fa-check-circle me-2"></i>
                                 <strong>Success!</strong> Your order has been placed successfully!
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
-
                             <h2><i class="fas fa-receipt me-2"></i>Order Confirmation</h2>
-
                             <div class="confirmation-card" style="background: #f8f9fa; padding: 30px; border-radius: 10px; border-left: 4px solid #28a745;">
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                         <h5 class="text-muted mb-3">Order Number</h5>
-                                        <p style="font-size: 1.5rem; font-weight: bold; color: #28a745;">
-                                            #<?php echo htmlspecialchars($order_details['id']); ?>
-                                        </p>
+                                        <p style="font-size: 1.5rem; font-weight: bold; color: #28a745;">#<?php echo htmlspecialchars($order_details['id']); ?></p>
                                     </div>
                                     <div class="col-md-6">
                                         <h5 class="text-muted mb-3">Order Status</h5>
-                                        <p style="font-size: 1.1rem; font-weight: bold; color: #ffc107;">
-                                            <i class="fas fa-hourglass-half"></i> Pending
-                                        </p>
+                                        <p style="font-size: 1.1rem; font-weight: bold; color: #ffc107;"><i class="fas fa-hourglass-half"></i> Pending</p>
                                     </div>
                                 </div>
-
                                 <hr>
-
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                         <h5 class="text-muted mb-2"><i class="fas fa-user"></i> User Name</h5>
-                                        <p style="font-size: 1.1rem; font-weight: 300;">
-                                            <?php echo htmlspecialchars($order_details['full_name']); ?>
-                                        </p>
+                                        <p><?php echo htmlspecialchars($order_details['full_name']); ?></p>
                                     </div>
                                     <div class="col-md-6">
                                         <h5 class="text-muted mb-2"><i class="fas fa-envelope"></i> Email</h5>
-                                        <p style="font-size: 1.1rem; font-weight: 300;">
-                                            <?php echo htmlspecialchars($order_details['email']); ?>
-                                        </p>
+                                        <p><?php echo htmlspecialchars($order_details['email']); ?></p>
                                     </div>
                                 </div>
-
                                 <div class="row mb-4">
                                     <div class="col-md-6">
-                                        <h5 class="text-muted mb-2"><i class="fas fa-phone"></i> Phone Number</h5>
-                                        <p style="font-size: 1.1rem; font-weight: 300;">
-                                            <?php echo htmlspecialchars($order_details['phone']); ?>
-                                        </p>
+                                        <h5 class="text-muted mb-2"><i class="fas fa-phone"></i> Phone</h5>
+                                        <p><?php echo htmlspecialchars($order_details['phone']); ?></p>
                                     </div>
                                     <div class="col-md-6">
                                         <h5 class="text-muted mb-2"><i class="fas fa-calendar-alt"></i> Delivery Date</h5>
-                                        <p style="font-size: 1.1rem; font-weight: 300;">
-                                            <?php echo date('M d, Y', strtotime($order_details['delivery_date'])); ?>
-                                        </p>
+                                        <p><?php echo date('M d, Y', strtotime($order_details['delivery_date'])); ?></p>
                                     </div>
                                 </div>
-
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                         <h5 class="text-muted mb-2"><i class="fas fa-cube"></i> Products</h5>
-                                        <p style="font-size: 1.1rem; font-weight: 300;">
-                                            <?php echo htmlspecialchars($order_details['product']); ?>
-                                        </p>
+                                        <p><?php echo htmlspecialchars($order_details['product']); ?></p>
                                     </div>
                                     <div class="col-md-6">
                                         <h5 class="text-muted mb-2"><i class="fas fa-boxes"></i> Total Quantity</h5>
-                                        <p style="font-size: 1.1rem; font-weight: 300;">
-                                            <?php echo htmlspecialchars(format_quantity_value((float) $order_details['quantity'])); ?>
-                                        </p>
+                                        <p><?php echo htmlspecialchars(format_quantity_value((float) $order_details['quantity'])); ?></p>
                                     </div>
                                 </div>
-
                                 <hr>
-
                                 <div class="mb-4">
                                     <h5 class="text-muted mb-2"><i class="fas fa-map-marker-alt"></i> Delivery Address</h5>
-                                    <p style="font-size: 1.1rem; font-weight: 300;">
-                                        <?php echo htmlspecialchars($order_details['delivery_address']); ?>
-                                    </p>
+                                    <p><?php echo htmlspecialchars($order_details['delivery_address']); ?></p>
                                 </div>
                             </div>
-
-                            <div class="mt-4" style="display: flex; gap: 10px;">
-                                <a href="my_orders.php" class="btn btn-success">
-                                    <i class="fas fa-eye me-2"></i> View All My Orders
-                                </a>
-                                <a href="index.php" class="btn btn-outline-primary">
-                                    <i class="fas fa-home me-2"></i> Back to Home
-                                </a>
+                            <div class="mt-4 d-flex gap-2">
+                                <a href="<?php echo BASE_URL; ?>/pages/my_orders.php" class="btn btn-success"><i class="fas fa-eye me-2"></i> View All My Orders</a>
+                                <a href="<?php echo BASE_URL; ?>/index.php" class="btn btn-outline-primary"><i class="fas fa-home me-2"></i> Back to Home</a>
                             </div>
-                        </section>
+                        </div>
                     <?php else: ?>
-                        <!-- Order Form Section -->
-                        <section class="order-section">
+                        <div class="order-section">
                             <h2><i class="fas fa-list me-2"></i>Order Details</h2>
                             <?php echo $message; ?>
-
                             <form id="order-form" method="POST" action="">
-                                <!-- Full Name -->
                                 <div class="form-group">
                                     <label for="user-name"><i class="fas fa-user me-2"></i>User Name</label>
-                                    <input type="text" id="user-name" name="user_name" placeholder="Enter your user name"
-                                        value="<?php echo htmlspecialchars($user_name_value); ?>"
-                                        required pattern="[A-Za-z\s]+"
-                                        title="Name must contain only letters and spaces">
+                                    <input type="text" id="user-name" name="user_name" value="<?php echo htmlspecialchars($user_name_value); ?>" required pattern="[A-Za-z\s]+" title="Name must contain only letters and spaces">
                                 </div>
-
-                                <!-- Phone Number -->
                                 <div class="form-group">
                                     <label for="phone"><i class="fas fa-phone me-2"></i>Phone Number</label>
-                                    <input type="tel" id="phone" name="phone" placeholder="Enter your phone number"
-                                        value="<?php echo htmlspecialchars($phone_value); ?>"
-                                        required pattern="[0-9]{10,15}" minlength="10" maxlength="15" inputmode="numeric"
-                                        title="Phone number must be between 10-15 digits">
+                                    <input type="tel" id="phone" name="phone" value="<?php echo htmlspecialchars($phone_value); ?>" required pattern="[0-9]{10,15}" minlength="10" maxlength="15" inputmode="numeric" title="Phone number must be between 10-15 digits">
                                 </div>
-
-                                <!-- Select Products -->
                                 <div class="form-group">
                                     <label><i class="fas fa-cube me-2"></i>Select Products</label>
                                     <div id="product-rows">
@@ -403,11 +395,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                         <option value="">-- Choose a Product --</option>
                                                         <?php foreach ($product_options as $product_key => $product_label): ?>
                                                             <?php $default_unit = product_is_piece_unit($product_key, $product_label) ? 'pieces' : 'kg'; ?>
-                                                            <option value="<?php echo htmlspecialchars($product_key); ?>"
-                                                                data-unit="<?php echo htmlspecialchars($default_unit); ?>"
-                                                                <?php echo (($item['product'] ?? '') === $product_key) ? 'selected' : ''; ?>>
-                                                                <?php echo htmlspecialchars($product_label); ?>
-                                                            </option>
+                                                            <option value="<?php echo htmlspecialchars($product_key); ?>" data-unit="<?php echo htmlspecialchars($default_unit); ?>" <?php echo (($item['product'] ?? '') === $product_key) ? 'selected' : ''; ?>><?php echo htmlspecialchars($product_label); ?></option>
                                                         <?php endforeach; ?>
                                                     </select>
                                                 </div>
@@ -417,197 +405,110 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 <div class="col-md-3">
                                                     <select name="units[]" class="form-control" required>
                                                         <?php foreach ($unit_options as $unit_key => $unit_label): ?>
-                                                            <option value="<?php echo htmlspecialchars($unit_key); ?>" <?php echo (($item['unit'] ?? 'kg') === $unit_key) ? 'selected' : ''; ?>>
-                                                                <?php echo htmlspecialchars($unit_label); ?>
-                                                            </option>
+                                                            <option value="<?php echo htmlspecialchars($unit_key); ?>" <?php echo (($item['unit'] ?? 'kg') === $unit_key) ? 'selected' : ''; ?>><?php echo htmlspecialchars($unit_label); ?></option>
                                                         <?php endforeach; ?>
                                                     </select>
                                                 </div>
                                                 <div class="col-md-1">
-                                                    <button type="button" class="btn btn-outline-danger btn-sm remove-product-row" title="Remove row">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm remove-product-row" title="Remove row"><i class="fas fa-times"></i></button>
                                                 </div>
                                             </div>
                                         <?php endforeach; ?>
                                     </div>
-                                    <button type="button" id="add-product-row" class="btn btn-outline-success btn-sm mt-2">
-                                        <i class="fas fa-plus me-1"></i>Add Another Product
-                                    </button>
+                                    <button type="button" id="add-product-row" class="btn btn-outline-success btn-sm mt-2"><i class="fas fa-plus me-1"></i>Add Another Product</button>
                                     <small class="text-muted d-block mt-2">For feeds sold in Kg, you can enter decimals (example: 2.5 Kg).</small>
                                 </div>
-
-                                <!-- Delivery Address -->
                                 <div class="form-group">
                                     <label for="address"><i class="fas fa-map-marker-alt me-2"></i>Delivery Address</label>
                                     <textarea name="address" id="address" placeholder="Enter your delivery address in detail" required><?php echo htmlspecialchars($address_value); ?></textarea>
                                 </div>
-
-                                <!-- Preferred Delivery Date -->
                                 <div class="form-group">
                                     <label for="delivery-date"><i class="fas fa-calendar me-2"></i>Preferred Delivery Date</label>
-                                    <input type="date" id="delivery-date" name="delivery_date" value="<?php echo htmlspecialchars($delivery_date_value); ?>"
-                                        min="<?php echo date('Y-m-d'); ?>" required>
+                                    <input type="date" id="delivery-date" name="delivery_date" value="<?php echo htmlspecialchars($delivery_date_value); ?>" min="<?php echo date('Y-m-d'); ?>" required>
                                 </div>
-
-                                <!-- Submit Button -->
                                 <button type="submit"><i class="fas fa-check me-2"></i>Submit Order</button>
                             </form>
-                        </section>
+                        </div>
                     <?php endif; ?>
                 </div>
 
-                <!-- Side Information -->
-                <div class="col-lg-4 padding-bottom=4px;">
-                    <div class="info-box">
-                        <h4><i class="fas fa-truck"></i>Fast Delivery</h4>
-                        <p>We deliver within 24 hours to Kalungu and surrounding areas.</p>
-                    </div>
-
-                    <div class="info-box">
-                        <h4><i class="fas fa-shield-alt"></i>Quality Assured</h4>
-                        <p>All products are tested and certified for quality standards.</p>
-                    </div>
-
-                    <div class="info-box">
-                        <h4><i class="fas fa-headset"></i>Customer Support</h4>
-                        <p>Need help? <a href="contact.php" style="color: var(--primary-color); text-decoration: none; font-weight: bold;">Contact us</a> anytime.</p>
-                    </div>
-
-                    <div class="info-box">
-                        <h4><i class="fas fa-info-circle"></i>Order Tracking</h4>
-                        <p>You'll receive a confirmation and tracking details via phone.</p>
-                    </div>
+                <div class="col-lg-4">
+                    <div class="info-box"><h4><i class="fas fa-truck"></i> Fast Delivery</h4><p>We deliver within 24 hours to Kalungu and surrounding areas.</p></div>
+                    <div class="info-box"><h4><i class="fas fa-shield-alt"></i> Quality Assured</h4><p>All products are tested and certified for quality standards.</p></div>
+                    <div class="info-box"><h4><i class="fas fa-headset"></i> Customer Support</h4><p>Need help? <a href="<?php echo BASE_URL; ?>/pages/contact.php" style="color: #2e7d32; text-decoration: none; font-weight: bold;">Contact us</a> anytime.</p></div>
+                    <div class="info-box"><h4><i class="fas fa-info-circle"></i> Order Tracking</h4><p>You'll receive a confirmation and tracking details via phone.</p></div>
                 </div>
             </div>
         </div>
     </section>
 
     <script>
-        // Extra safeguard for real-time input
-        const fullNameInput = document.getElementById('full-name');
+        const fullNameInput = document.getElementById('user-name');
         if (fullNameInput) {
-            fullNameInput.addEventListener('input', function() {
-                this.value = this.value.replace(/[^A-Za-z\s]/g, '');
-            });
+            fullNameInput.addEventListener('input', function() { this.value = this.value.replace(/[^A-Za-z\s]/g, ''); });
         }
-
         const phoneInput = document.getElementById('phone');
         if (phoneInput) {
-            phoneInput.addEventListener('input', function() {
-                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
-            });
+            phoneInput.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10); });
         }
-
         const productRowsWrap = document.getElementById('product-rows');
         const addProductBtn = document.getElementById('add-product-row');
-
         if (productRowsWrap && addProductBtn) {
             function applyQtyRules(row) {
                 const qty = row.querySelector('input[name="quantities[]"]');
                 const unit = row.querySelector('select[name="units[]"]');
-                if (!qty || !unit) {
-                    return;
-                }
-
+                if (!qty || !unit) return;
                 if (unit.value === 'kg') {
-                    qty.min = '1';
-                    qty.step = '0.5';
-                    if (!qty.value || parseFloat(qty.value) < 1) {
-                        qty.value = '1';
-                    }
+                    qty.min = '1'; qty.step = '0.5';
+                    if (!qty.value || parseFloat(qty.value) < 1) qty.value = '1';
                 } else {
-                    qty.min = '1';
-                    qty.step = '1';
-                    if (!qty.value || parseFloat(qty.value) < 1) {
-                        qty.value = '1';
-                    }
+                    qty.min = '1'; qty.step = '1';
+                    if (!qty.value || parseFloat(qty.value) < 1) qty.value = '1';
                 }
             }
-
             function updateRemoveButtons() {
                 const rows = productRowsWrap.querySelectorAll('.product-row');
-                rows.forEach((row) => {
-                    const removeBtn = row.querySelector('.remove-product-row');
-                    if (removeBtn) {
-                        removeBtn.disabled = rows.length === 1;
-                    }
-                });
+                rows.forEach(row => { const btn = row.querySelector('.remove-product-row'); if (btn) btn.disabled = rows.length === 1; });
             }
-
             addProductBtn.addEventListener('click', function() {
                 const baseRow = productRowsWrap.querySelector('.product-row');
-                if (!baseRow) {
-                    return;
-                }
-
+                if (!baseRow) return;
                 const clone = baseRow.cloneNode(true);
                 const select = clone.querySelector('select[name="products[]"]');
                 const qty = clone.querySelector('input[name="quantities[]"]');
                 const unit = clone.querySelector('select[name="units[]"]');
-
-                if (select) {
-                    select.value = '';
-                }
-                if (qty) {
-                    qty.value = '1';
-                }
-                if (unit) {
-                    unit.value = 'kg';
-                }
-
+                if (select) select.value = '';
+                if (qty) qty.value = '1';
+                if (unit) unit.value = 'kg';
                 productRowsWrap.appendChild(clone);
                 applyQtyRules(clone);
                 updateRemoveButtons();
             });
-
             productRowsWrap.addEventListener('change', function(event) {
                 const productSelect = event.target.closest('select[name="products[]"]');
-                if (!productSelect) {
-                    return;
-                }
-
+                if (!productSelect) return;
                 const row = productSelect.closest('.product-row');
-                if (!row) {
-                    return;
-                }
-
+                if (!row) return;
                 const unitSelect = row.querySelector('select[name="units[]"]');
-                if (!unitSelect) {
-                    return;
-                }
-
+                if (!unitSelect) return;
                 const selectedOption = productSelect.options[productSelect.selectedIndex];
                 const unitDefault = selectedOption ? selectedOption.dataset.unit : 'kg';
                 unitSelect.value = unitDefault || 'kg';
-
                 applyQtyRules(row);
             });
-
             productRowsWrap.addEventListener('click', function(event) {
                 const removeBtn = event.target.closest('.remove-product-row');
-                if (!removeBtn) {
-                    return;
-                }
-
+                if (!removeBtn) return;
                 const rows = productRowsWrap.querySelectorAll('.product-row');
-                if (rows.length <= 1) {
-                    return;
-                }
-
+                if (rows.length <= 1) return;
                 const row = removeBtn.closest('.product-row');
-                if (row) {
-                    row.remove();
-                    updateRemoveButtons();
-                }
+                if (row) { row.remove(); updateRemoveButtons(); }
             });
-
             updateRemoveButtons();
         }
     </script>
 
-    <?php include  '../includes/footer.php'; ?>
+    <?php include dirname(__DIR__) . '/includes/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
-
 </html>

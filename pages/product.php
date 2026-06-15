@@ -1,8 +1,11 @@
 <?php
-include '../connection.php';
+// pages/product.php – Fixed paths using BASE_URL from config.php
+
+require_once dirname(__DIR__) . '/config.php';
+require_once dirname(__DIR__) . '/connection.php';
 
 $page_title = 'Products | Kalungu Quality Feeds';
-$fallback_image = 'images/fs.broiler-chicks.avif';
+$fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
 
 $categories = [];
 $categories_result = mysqli_query(
@@ -41,19 +44,15 @@ function truncate_text($text, $length = 120)
 	if ($text === '') {
 		return 'Fresh stock available in the store.';
 	}
-
 	if (function_exists('mb_strlen') && function_exists('mb_substr')) {
 		if (mb_strlen($text) <= $length) {
 			return $text;
 		}
-
 		return rtrim(mb_substr($text, 0, $length - 3)) . '...';
 	}
-
 	if (strlen($text) <= $length) {
 		return $text;
 	}
-
 	return rtrim(substr($text, 0, $length - 3)) . '...';
 }
 ?>
@@ -65,10 +64,9 @@ function truncate_text($text, $length = 120)
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title><?php echo htmlspecialchars($page_title); ?></title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-	<link rel="stylesheet" href="../assets/joy.css">
-		<link rel="stylesheet" href="../assets/foot.css">
-	<link rel="stylesheet" href="../assets/head.css">
-
+	<link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/joy.css">
+	<link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/foot.css">
+	<link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/head.css">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 	<style>
 		body {
@@ -76,11 +74,9 @@ function truncate_text($text, $length = 120)
 				radial-gradient(circle at top left, rgba(46, 125, 50, 0.08), transparent 32%),
 				linear-gradient(180deg, #fbfcf7 0%, #ffffff 42%, #f7faf4 100%);
 		}
-
 		.store-hero {
 			padding: 4rem 0 2.5rem;
 		}
-
 		.store-kicker {
 			display: inline-flex;
 			align-items: center;
@@ -92,7 +88,6 @@ function truncate_text($text, $length = 120)
 			font-weight: 700;
 			letter-spacing: 0.02em;
 		}
-
 		.store-hero h1 {
 			color: #16361c;
 			font-weight: 800;
@@ -100,13 +95,11 @@ function truncate_text($text, $length = 120)
 			max-width: 11ch;
 			margin: 1rem 0;
 		}
-
 		.store-hero p {
 			color: #506156;
 			max-width: 58rem;
 			font-size: 1.05rem;
 		}
-
 		.hero-card {
 			border: 1px solid rgba(46, 125, 50, 0.12);
 			background: rgba(255, 255, 255, 0.82);
@@ -114,7 +107,6 @@ function truncate_text($text, $length = 120)
 			border-radius: 22px;
 			box-shadow: 0 20px 60px rgba(18, 52, 24, 0.08);
 		}
-
 		.metric {
 			padding: 1.15rem;
 			border-radius: 18px;
@@ -122,7 +114,6 @@ function truncate_text($text, $length = 120)
 			border: 1px solid rgba(22, 54, 28, 0.08);
 			height: 100%;
 		}
-
 		.metric .value {
 			display: block;
 			color: #1d5723;
@@ -130,23 +121,19 @@ function truncate_text($text, $length = 120)
 			font-weight: 800;
 			line-height: 1;
 		}
-
 		.metric .label {
 			color: #66756b;
 			margin-top: 0.35rem;
 		}
-
 		.section-title {
 			color: #17361d;
 			font-weight: 800;
 			margin-bottom: 0.5rem;
 		}
-
 		.section-copy {
 			color: #5f6d62;
 			margin-bottom: 1.5rem;
 		}
-
 		.product-card {
 			border: 0;
 			border-radius: 22px;
@@ -156,23 +143,19 @@ function truncate_text($text, $length = 120)
 			transition: transform 0.24s ease, box-shadow 0.24s ease;
 			height: 100%;
 		}
-
 		.product-card:hover {
 			transform: translateY(-6px);
 			box-shadow: 0 24px 55px rgba(20, 40, 24, 0.13);
 		}
-
 		.product-image {
 			width: 100%;
 			height: 240px;
 			object-fit: cover;
 			background: #edf3ec;
 		}
-
 		.product-body {
 			padding: 1.25rem;
 		}
-
 		.category-pill,
 		.new-pill {
 			display: inline-flex;
@@ -183,34 +166,28 @@ function truncate_text($text, $length = 120)
 			font-size: 0.78rem;
 			font-weight: 700;
 		}
-
 		.category-pill {
 			background: rgba(46, 125, 50, 0.1);
 			color: #245c28;
 		}
-
 		.new-pill {
 			background: #17361d;
 			color: #fff;
 		}
-
 		.product-title {
 			color: #16361c;
 			font-weight: 800;
 			margin: 0.8rem 0 0.45rem;
 		}
-
 		.product-link {
 			color: #2e7d32;
 			font-weight: 700;
 			text-decoration: none;
 		}
-
 		.product-link:hover {
 			color: #1f5d25;
 			text-decoration: underline;
 		}
-
 		.product-actions {
 			display: flex;
 			flex-wrap: wrap;
@@ -218,7 +195,6 @@ function truncate_text($text, $length = 120)
 			justify-content: space-between;
 			align-items: center;
 		}
-
 		.btn-cart-action {
 			background: #2e7d32;
 			color: #fff;
@@ -227,12 +203,10 @@ function truncate_text($text, $length = 120)
 			font-weight: 700;
 			text-decoration: none;
 		}
-
 		.btn-cart-action:hover {
 			background: #1f5d25;
 			color: #fff;
 		}
-
 		.catalog-note {
 			background: linear-gradient(135deg, rgba(46, 125, 50, 0.1), rgba(243, 250, 242, 0.9));
 			border: 1px solid rgba(46, 125, 50, 0.15);
@@ -243,7 +217,7 @@ function truncate_text($text, $length = 120)
 </head>
 
 <body>
-	<?php include '../includes/header.php'; ?>
+	<?php include dirname(__DIR__) . '/includes/header.php'; ?>
 
 	<main>
 		<section class="store-hero">
@@ -252,11 +226,11 @@ function truncate_text($text, $length = 120)
 					<div class="col-lg-7">
 						<span class="store-kicker"><i class="fa-solid fa-store"></i> Live store catalog</span>
 						<h1>Browse products and see new stock as it is added.</h1>
-							<p>
-								Explore our full range of available products and lastest additions.
-								We keep this page updated in real time so you always shop our freshest stock.
-								Add products to your cart, then review them before you place an order.
-							</p>
+						<p>
+							Explore our full range of available products and latest additions.
+							We keep this page updated in real time so you always shop our freshest stock.
+							Add products to your cart, then review them before you place an order.
+						</p>
 						<div class="d-flex flex-wrap gap-3 mt-4">
 							<a href="#new-products" class="btn btn-success btn-lg px-4">
 								<i class="fa-solid fa-sparkles me-2"></i>View New Products
@@ -301,12 +275,12 @@ function truncate_text($text, $length = 120)
 						<div class="col-lg-8">
 							<h2 class="section-title mb-2">Products update automatically</h2>
 							<p class="mb-0 section-copy">
-								We continuosly update our stock so you never miss out on our newest products.
+								We continuously update our stock so you never miss out on our newest products.
 								Check back often to see the latest additions to our store and find the perfect feed for your poultry.
 							</p>
 						</div>
 						<div class="col-lg-4 text-lg-end">
-							<a href="contact.php" class="btn btn-dark btn-lg px-4">
+							<a href="<?php echo BASE_URL; ?>/contact.php" class="btn btn-dark btn-lg px-4">
 								<i class="fa-solid fa-phone me-2"></i>Ask About Stock
 							</a>
 						</div>
@@ -346,14 +320,13 @@ function truncate_text($text, $length = 120)
 												New
 											</span>
 											<?php endif; ?>
-											
 										</div>
 										<h3 class="h5 product-title"><?php echo htmlspecialchars($product['name']); ?></h3>
 										<p class="text-secondary mb-4"><?php echo htmlspecialchars(truncate_text($product['description'], 130)); ?></p>
 										<div class="product-actions mt-auto">
-											<a class="product-link" href="product-details.php?product=<?php echo urlencode($product['slug']); ?>">View details</a>
-											<a class="btn-cart-action" href="add_to_cart.php?product=<?php echo urlencode($product['slug']); ?>">
-												<i class="fa-solid fa-cart- plus me-1"></i>Add to Cart
+											<a class="product-link" href="<?php echo BASE_URL; ?>/product-details.php?product=<?php echo urlencode($product['slug']); ?>">View details</a>
+											<a class="btn-cart-action" href="<?php echo BASE_URL; ?>./../add_to_cart.php?product=<?php echo urlencode($product['slug']); ?>">
+												<i class="fa-solid fa-cart-plus me-1"></i>Add to Cart
 											</a>
 										</div>
 										<small class="text-muted mt-3">Added <?php echo htmlspecialchars(date('M j', strtotime($product['created_at']))); ?></small>
@@ -379,7 +352,7 @@ function truncate_text($text, $length = 120)
 					</div>
 					<div class="d-flex flex-wrap gap-2">
 						<?php foreach ($categories as $category): ?>
-							<a href="product-category.php?category=<?php echo urlencode($category['slug']); ?>" class="btn btn-sm btn-outline-success rounded-pill px-3">
+							<a href="<?php echo BASE_URL; ?>/product-category.php?category=<?php echo urlencode($category['slug']); ?>" class="btn btn-sm btn-outline-success rounded-pill px-3">
 								<?php echo htmlspecialchars($category['title']); ?>
 							</a>
 						<?php endforeach; ?>
@@ -403,8 +376,8 @@ function truncate_text($text, $length = 120)
 										<h3 class="h5 product-title"><?php echo htmlspecialchars($product['name']); ?></h3>
 										<p class="text-secondary mb-4"><?php echo htmlspecialchars(truncate_text($product['description'], 110)); ?></p>
 										<div class="product-actions mt-auto">
-											<a class="product-link" href="product-details.php?product=<?php echo urlencode($product['slug']); ?>">Details</a>
-											<a class="btn-cart-action" href="add_to_cart.php?product=<?php echo urlencode($product['slug']); ?>">
+											<a class="product-link" href="<?php echo BASE_URL; ?>/product-details.php?product=<?php echo urlencode($product['slug']); ?>">Details</a>
+											<a class="btn-cart-action" href="<?php echo BASE_URL; ?>/add_to_cart.php?product=<?php echo urlencode($product['slug']); ?>">
 												<i class="fa-solid fa-cart-plus me-1"></i>Add to Cart
 											</a>
 										</div>
@@ -422,7 +395,7 @@ function truncate_text($text, $length = 120)
 		</section>
 	</main>
 
-	<?php include '../includes/footer.php'; ?>
+	<?php include dirname(__DIR__) . '/includes/footer.php'; ?>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>

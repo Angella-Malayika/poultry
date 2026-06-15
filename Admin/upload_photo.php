@@ -1,12 +1,15 @@
 <?php
-require_once __DIR__ . '/../auth_required.php';
+// Admin/upload_photo.php – Fixed paths using BASE_URL from config.php
+require_once dirname(__DIR__) . '/config.php';
+require_once dirname(__DIR__) . '/auth_required.php';
 
-if (strtolower((string) ($_SESSION['role'] ?? '')) !== 'admin') {
-    header('Location: ../login.php');
+// Ensure only admin can access
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header('Location: ' . BASE_URL . '/pages/login.php');
     exit();
 }
 
-include 'connection.php';
+require_once dirname(__DIR__) . '/connection.php';
 
 $page_title = 'Add Product | Admin Panel';
 $message = '';
@@ -35,7 +38,6 @@ function slugify(string $text): string
     $text = strtolower(trim($text));
     $text = preg_replace('/[^a-z0-9]+/i', '-', $text);
     $text = trim((string) $text, '-');
-
     return $text !== '' ? $text : 'product';
 }
 
@@ -44,26 +46,20 @@ function generate_unique_slug(mysqli $conn, string $base_slug): string
     $slug = $base_slug;
     $suffix = 2;
     $stmt = $conn->prepare('SELECT id FROM products WHERE slug = ? LIMIT 1');
-
     if (!$stmt) {
         return $slug;
     }
-
     while (true) {
         $stmt->bind_param('s', $slug);
         $stmt->execute();
         $stmt->store_result();
-
         if ($stmt->num_rows === 0) {
             break;
         }
-
         $slug = $base_slug . '-' . $suffix;
         $suffix++;
     }
-
     $stmt->close();
-
     return $slug;
 }
 
@@ -133,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($delete_stmt->execute()) {
                         $image_path = (string) ($row['image'] ?? '');
                         if ($image_path !== '') {
-                            $file_path = __DIR__ . '/../' . ltrim($image_path, '/');
+                            $file_path = dirname(__DIR__) . '/' . ltrim($image_path, '/');
                             if (is_file($file_path)) {
                                 @unlink($file_path);
                             }
@@ -207,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = 'Please choose a product image.';
                 $message_type = 'danger';
             } else {
-                $upload_dir = __DIR__ . '/../images/products';
+                $upload_dir = dirname(__DIR__) . '/images/products';
                 if (!is_dir($upload_dir) && !mkdir($upload_dir, 0775, true) && !is_dir($upload_dir)) {
                     $message = 'Unable to create the product image folder.';
                     $message_type = 'danger';
@@ -295,13 +291,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                 if ($stmt->execute()) {
                                     if ($image_uploaded && $old_image_path !== '' && $old_image_path !== $database_path) {
-                                        $old_path = __DIR__ . '/../' . ltrim($old_image_path, '/');
+                                        $old_path = dirname(__DIR__) . '/' . ltrim($old_image_path, '/');
                                         if (is_file($old_path)) {
                                             @unlink($old_path);
                                         }
                                     }
                                     $stmt->close();
-                                    header('Location: upload_photo.php?success=1&updated=1');
+                                    header('Location: ' . BASE_URL . '/Admin/upload_photo.php?success=1&updated=1');
                                     exit();
                                 }
 
@@ -341,7 +337,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                 if ($stmt->execute()) {
                                     $stmt->close();
-                                    header('Location: upload_photo.php?success=1');
+                                    header('Location: ' . BASE_URL . '/upload_photo.php?success=1');
                                     exit();
                                 }
 
@@ -404,21 +400,18 @@ if ($products_result) {
         --leaf-100: #edf8f1;
         --ink: #173026;
     }
-
     body {
         background:
             radial-gradient(circle at top left, rgba(31, 107, 63, 0.12), transparent 34%),
             linear-gradient(180deg, #f7fbf8 0%, #eef5ef 100%);
         color: var(--ink);
     }
-
     .sidebar {
         background: linear-gradient(135deg, var(--leaf-900), var(--leaf-700));
         min-height: 100vh;
         color: #fff;
         padding-top: 20px;
     }
-
     .sidebar .nav-link {
         color: rgba(255,255,255,0.8);
         padding: 12px 20px;
@@ -426,40 +419,33 @@ if ($products_result) {
         margin: 4px 10px;
         transition: background 0.2s ease, color 0.2s ease;
     }
-
     .sidebar .nav-link:hover,
     .sidebar .nav-link.active {
         background: rgba(255,255,255,0.14);
         color: #fff;
     }
-
     .sidebar .nav-link i {
         margin-right: 10px;
         font-size: 1.05rem;
     }
-
     .brand {
         padding: 10px 20px 30px;
         border-bottom: 1px solid rgba(255,255,255,0.15);
         margin-bottom: 15px;
     }
-
     .brand h4 {
         margin: 0;
         font-weight: 700;
     }
-
     .brand small {
         opacity: 0.7;
     }
-
     .top-bar {
         background: rgba(255,255,255,0.92);
         backdrop-filter: blur(10px);
         border-bottom: 1px solid rgba(15, 60, 42, 0.08);
         padding: 15px 25px;
     }
-
     .hero-card,
     .form-card,
     .preview-card,
@@ -469,14 +455,12 @@ if ($products_result) {
         border-radius: 18px;
         box-shadow: 0 18px 40px rgba(18, 32, 23, 0.08);
     }
-
     .hero-card {
         background: linear-gradient(135deg, var(--leaf-900), var(--leaf-700));
         color: #fff;
         overflow: hidden;
         position: relative;
     }
-
     .hero-card::after {
         content: '';
         position: absolute;
@@ -487,7 +471,6 @@ if ($products_result) {
         bottom: -120px;
         background: rgba(255,255,255,0.12);
     }
-
     .hero-badge {
         display: inline-flex;
         align-items: center;
@@ -497,13 +480,11 @@ if ($products_result) {
         background: rgba(255,255,255,0.14);
         font-weight: 700;
     }
-
     .mini-stat {
         background: #fff;
         padding: 1rem 1.1rem;
         height: 100%;
     }
-
     .mini-stat .value {
         display: block;
         font-weight: 800;
@@ -511,23 +492,19 @@ if ($products_result) {
         line-height: 1;
         color: var(--leaf-900);
     }
-
     .mini-stat .label {
         color: #66756b;
         margin-top: 0.3rem;
         font-size: 0.95rem;
     }
-
     .section-title {
         color: var(--leaf-900);
         font-weight: 800;
         margin-bottom: 0.35rem;
     }
-
     .section-copy {
         color: #5f6d62;
     }
-
     .upload-tag {
         background: var(--leaf-100);
         color: var(--leaf-700);
@@ -537,7 +514,6 @@ if ($products_result) {
         font-weight: 700;
         font-size: 0.88rem;
     }
-
     .product-thumb {
         width: 100%;
         height: 180px;
@@ -545,19 +521,16 @@ if ($products_result) {
         border-radius: 16px 16px 0 0;
         background: #edf3ec;
     }
-
     .product-card {
         overflow: hidden;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         background: #fff;
         height: 100%;
     }
-
     .product-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 22px 46px rgba(18, 32, 23, 0.12);
     }
-
     .badge-soft {
         display: inline-flex;
         align-items: center;
@@ -567,23 +540,19 @@ if ($products_result) {
         font-size: 0.78rem;
         font-weight: 700;
     }
-
     .badge-category {
         background: rgba(31, 107, 63, 0.1);
         color: var(--leaf-700);
     }
-
     .badge-new {
         background: var(--leaf-900);
         color: #fff;
     }
-
     .help-box {
         background: linear-gradient(135deg, rgba(31, 107, 63, 0.08), rgba(237, 248, 241, 0.95));
         border: 1px solid rgba(31, 107, 63, 0.14);
         border-radius: 18px;
     }
-
     .form-label {
         font-weight: 700;
         color: #294235;
@@ -600,13 +569,13 @@ if ($products_result) {
             <small>Admin Panel</small>
         </div>
         <nav class="nav flex-column">
-            <a class="nav-link" href="admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
-            <a class="nav-link active" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
-            <a class="nav-link" href="view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
-            <a class="nav-link" href="view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
-            <a class="nav-link" href="view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
-            <a class="nav-link" href="login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
-            <a class="nav-link text-danger mt-3" href="adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+            <a class="nav-link active" href="<?php echo BASE_URL; ?>/upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
+            <a class="nav-link text-danger mt-3" href="<?php echo BASE_URL; ?>/adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
         </nav>
     </div>
 
@@ -705,7 +674,7 @@ if ($products_result) {
                                     <small class="text-muted">Accepted formats: JPG, PNG, GIF, WEBP. Maximum size: 5MB. <?php echo $is_editing ? 'Leave blank to keep the current image.' : ''; ?></small>
                                     <?php if ($is_editing && $current_product_image !== ''): ?>
                                         <div class="mt-2">
-                                            <img src="../<?php echo htmlspecialchars($current_product_image); ?>" alt="Current product" class="img-fluid rounded" style="max-height: 140px;">
+                                            <img src="<?php echo BASE_URL; ?>/<?php echo ltrim($current_product_image, '/'); ?>" alt="Current product" class="img-fluid rounded" style="max-height: 140px;">
                                         </div>
                                     <?php endif; ?>
                                 </div>
@@ -744,15 +713,6 @@ if ($products_result) {
                 </div>
 
                 <div class="col-lg-5">
-                    <!-- <div class="help-box p-4 mb-4">
-                         <h3 class="h5 section-title mb-3">What happens after save</h3>
-                        <ul class="mb-0 ps-3 text-secondary">
-                            <li>The product is inserted into the `products` table.</li>
-                            <li>The uploaded image is stored in `images/products/`.</li>
-                            <li>The public product pages read the new record automatically.</li>
-                        </ul> 
-                    </div> -->
-
                     <div class="card preview-card mb-4">
                         <div class="card-body p-4">
                             <h3 class="h5 section-title mb-1">Recent products</h3>
@@ -763,7 +723,7 @@ if ($products_result) {
                                     <?php foreach ($recent_products as $product): ?>
                                         <div class="col-12">
                                             <div class="product-card">
-                                                <img src="../<?php echo htmlspecialchars(!empty($product['image']) ? $product['image'] : 'images/fs.broiler-chicks.avif'); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-thumb">
+                                                <img src="<?php echo BASE_URL; ?>/<?php echo ltrim(!empty($product['image']) ? $product['image'] : 'images/fs.broiler-chicks.avif', '/'); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-thumb">
                                                 <div class="p-3">
                                                     <div class="d-flex flex-wrap gap-2 mb-2">
                                                         <span class="badge-soft badge-category"><i class="bi bi-tag"></i> <?php echo htmlspecialchars($product['category_title']); ?></span>
@@ -812,7 +772,7 @@ if ($products_result) {
                                     <?php foreach ($products as $product): ?>
                                         <tr>
                                             <td style="width: 90px;">
-                                                <img src="../<?php echo htmlspecialchars(!empty($product['image']) ? $product['image'] : 'images/fs.broiler-chicks.avif'); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-fluid rounded" style="max-height: 60px;">
+                                                <img src="<?php echo BASE_URL; ?>/<?php echo ltrim(!empty($product['image']) ? $product['image'] : 'images/fs.broiler-chicks.avif', '/'); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-fluid rounded" style="max-height: 60px;">
                                             </td>
                                             <td>
                                                 <div class="fw-bold"><?php echo htmlspecialchars($product['name']); ?></div>
@@ -831,7 +791,7 @@ if ($products_result) {
                                             </td>
                                             <td>
                                                 <div class="d-flex flex-wrap gap-2">
-                                                    <a href="upload_photo.php?edit=<?php echo (int) $product['id']; ?>" class="btn btn-outline-success btn-sm">Edit</a>
+                                                    <a href="<?php echo BASE_URL; ?>/upload_photo.php?edit=<?php echo (int) $product['id']; ?>" class="btn btn-outline-success btn-sm">Edit</a>
                                                     <form method="POST" class="m-0" onsubmit="return confirm('Delete this product?');">
                                                         <input type="hidden" name="product_action" value="delete">
                                                         <input type="hidden" name="product_id" value="<?php echo (int) $product['id']; ?>">

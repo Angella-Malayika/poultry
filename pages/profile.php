@@ -1,6 +1,8 @@
 <?php
-require_once __DIR__ . '/../auth_required.php';
-include '../connection.php';
+// pages/profile.php – Fixed paths using BASE_URL from config.php
+require_once dirname(__DIR__) . '/config.php';
+require_once dirname(__DIR__) . '/auth_required.php';
+require_once dirname(__DIR__) . '/connection.php';
 
 $user_id = (int) ($_SESSION['user_id'] ?? 0);
 $profile = [
@@ -60,7 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($duplicate_result && $duplicate_result->num_rows > 0) {
                     $message = '<div class="alert alert-danger">Username or email already exists.</div>';
                 }
-
                 $duplicate_stmt->close();
             }
 
@@ -111,29 +112,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         body {
             background: linear-gradient(180deg, #f7faf4 0%, #ffffff 100%);
         }
-
         .profile-hero {
             background: linear-gradient(135deg, #1b5e20, #2e7d32 100%);
             color: #fff;
             padding: 4rem 0 2.5rem;
         }
-
         .profile-card {
             border: 0;
             border-radius: 22px;
             box-shadow: 0 18px 45px rgba(18, 32, 23, 0.08);
         }
-
-        /* Password eye toggle styles */
         .password-wrap {
             position: relative;
         }
-
         .password-wrap .form-control {
             padding-right: 2.8rem;
-            transition: padding 0.15s ease;
         }
-
         .password-toggle {
             position: absolute;
             top: 50%;
@@ -141,41 +135,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             transform: translateY(-50%);
             border: 0;
             background: transparent;
-            padding: 0;
-            line-height: 1;
             cursor: pointer;
             color: #198754;
             z-index: 2;
         }
-
         .password-toggle i {
             font-size: 1rem;
             pointer-events: none;
         }
-
-        .password-toggle:focus {
-            outline: none;
-            box-shadow: none;
-        }
-
         .password-toggle:hover {
             color: #146c43;
         }
-
         @media (max-width: 576px) {
-            .password-toggle {
-                right: 0.5rem;
-            }
-
-            .col-md-4 .form-control {
-                padding-right: 2.1rem;
-            }
+            .password-toggle { right: 0.5rem; }
         }
     </style>
 </head>
 
 <body>
-    <?php include '../includes/header.php'; ?>
+    <?php include dirname(__DIR__) . '/includes/header.php'; ?>
 
     <section class="profile-hero">
         <div class="container">
@@ -191,7 +169,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="card profile-card">
                         <div class="card-body p-4 p-md-5">
                             <?php echo $message; ?>
-
                             <form method="POST" action="" id="edit-profile">
                                 <div class="row g-3">
                                     <div class="col-md-6">
@@ -202,9 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <label class="form-label fw-semibold">Email</label>
                                         <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($profile['email']); ?>" required>
                                     </div>
-                                    <div class="col-12">
-                                        <hr>
-                                    </div>
+                                    <div class="col-12"><hr></div>
                                     <div class="col-12">
                                         <h2 class="h5 mb-1">Change Password</h2>
                                         <p class="text-muted small mb-0">Leave this blank if you do not want to change your password.</p>
@@ -237,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         </div>
                                     </div>
                                     <div class="col-12 d-flex flex-wrap gap-2 justify-content-end mt-2">
-                                        <a href="../index.php" class="btn btn-outline-secondary">Back Home</a>
+                                        <a href="<?php echo BASE_URL; ?>/index.php" class="btn btn-outline-secondary">Back Home</a>
                                         <button type="submit" class="btn btn-success">
                                             <i class="fa-solid fa-floppy-disk me-2"></i>Save Changes
                                         </button>
@@ -251,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </section>
 
-    <?php include '../includes/footer.php'; ?>
+    <?php include dirname(__DIR__) . '/includes/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 
     <script>
@@ -261,13 +236,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     const targetId = this.getAttribute('data-target');
                     const input = document.getElementById(targetId);
                     const icon = this.querySelector('i');
-
                     if (!input) return;
-
                     input.type = 'text';
                     icon.classList.remove('fa-eye');
                     icon.classList.add('fa-eye-slash');
-
                     clearTimeout(input._hideTimer);
                     input._hideTimer = setTimeout(function() {
                         input.type = 'password';
@@ -279,5 +251,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
     </script>
 </body>
-
 </html>

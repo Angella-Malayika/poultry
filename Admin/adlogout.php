@@ -1,22 +1,29 @@
 <?php
-include 'connection.php';
-session_start();
+// Admin/adlogout.php – Fixed paths using BASE_URL from config.php
+require_once dirname(__DIR__) . '/config.php';
+require_once dirname(__DIR__) . '/connection.php';
 
+// Update login_activity with logout timestamp
 if (!empty($_SESSION['login_activity_id']) && isset($_SESSION['user_id'])) {
-	$activity_id = (int) $_SESSION['login_activity_id'];
-	if ($activity_id > 0) {
-		$stmt = $conn->prepare("UPDATE login_activity SET logout_at = NOW() WHERE id = ? AND user_id = ?");
-		if ($stmt) {
-			$user_id = (int) $_SESSION['user_id'];
-			$stmt->bind_param('ii', $activity_id, $user_id);
-			$stmt->execute();
-			$stmt->close();
-		}
-	}
+    $activity_id = (int) $_SESSION['login_activity_id'];
+    if ($activity_id > 0) {
+        $stmt = $conn->prepare("UPDATE login_activity SET logout_at = NOW() WHERE id = ? AND user_id = ?");
+        if ($stmt) {
+            $user_id = (int) $_SESSION['user_id'];
+            $stmt->bind_param('ii', $activity_id, $user_id);
+            $stmt->execute();
+            $stmt->close();
+        }
+    }
 }
 
+// Clear cart from session
 unset($_SESSION['cart']);
 
+// Destroy the session
 session_destroy();
-header('Location: ../login.php');
+
+// Redirect to login page
+header('Location: ' . BASE_URL . '/../pages/login.php');
+exit();
 ?>

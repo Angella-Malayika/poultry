@@ -1,8 +1,10 @@
 <?php
-include("../connection.php");
-session_start();
+// pages/login.php – Fixed paths using BASE_URL from config.php
 
-$message = ''; // Initialize message variable to prevent undefined warnings
+require_once dirname(__DIR__) . '/config.php';  // loads BASE_URL and starts session
+require_once dirname(__DIR__) . '/connection.php';  // database connection
+
+$message = ''; // Initialize message variable
 
 if (isset($_POST['login'])) {
     $email = trim($_POST['email']);
@@ -96,10 +98,11 @@ if (isset($_POST['login'])) {
                             $activity_stmt->close();
                         }
 
+                        // Redirect using BASE_URL
                         if ($role === 'admin') {
-                            header("Location:  Admin/admin.php");
+                            header("Location: " . BASE_URL . "./../Admin/admin.php");
                         } else {
-                            header("Location: ../index.php");
+                            header("Location: " . BASE_URL . "./../index.php");
                         }
                         exit();
                     } else {
@@ -308,8 +311,8 @@ if (isset($_POST['login'])) {
             </form>
 
             <div class="text-center">
-                <p>Don't have an account? <a href="./signup.php">Sign up here</a></p>
-                <a href="../index.php" class="back-link"><i class="fas fa-home"></i> Back to Home</a>
+                <p>Don't have an account? <a href="<?php echo BASE_URL; ?>./signup.php">Sign up here</a></p>
+                <a href="<?php echo BASE_URL; ?>./../index.php" class="back-link"><i class="fas fa-home"></i> Back to Home</a>
             </div>
         </div>
     </main>
@@ -333,6 +336,6 @@ if (isset($_POST['login'])) {
             });
         }
     </script>
-    <?php include './includes/footer.php'; ?>
+    <?php include dirname(__DIR__) . '/includes/footer.php'; ?>
 </body>
 </html>

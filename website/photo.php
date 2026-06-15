@@ -1,27 +1,27 @@
 <?php
-// Serve photo from database by ID
+// website/photo.php – Serve photo from database by ID or file path
+
+require_once dirname(__DIR__) . '/config.php'; // defines BASE_URL, starts session if needed
+require_once dirname(__DIR__) . '/connection.php';
+
 header('Cache-Control: public, max-age=3600');
 header('Pragma: public');
 
-// Get photo ID from GET parameter
 $photo_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
 if ($photo_id <= 0) {
-    header('HTTP/1.0 404 Not Found');
+    http_response_code(404);
     exit('No photo ID provided');
 }
-
-// Connect to database
-require_once __DIR__ . '/../connection.php';
 
 // Check if photos table exists
 $table_check = mysqli_query($conn, "SHOW TABLES LIKE 'photos'");
 if (!$table_check || mysqli_num_rows($table_check) === 0) {
-    header('HTTP/1.0 404 Not Found');
+    http_response_code(404);
     exit('Photos table does not exist');
 }
 
-// Check for required columns
+// Get column list
 $columns = [];
 $columns_result = mysqli_query($conn, "SHOW COLUMNS FROM photos");
 if ($columns_result) {
@@ -32,9 +32,11 @@ if ($columns_result) {
 
 $has_image_data = in_array('image_data', $columns, true);
 $has_image_mime = in_array('image_mime', $columns, true);
+$has_image_path = in_array('image', $columns, true);
 
-// Fetch photo from database
 $photo = null;
+
+// Try BLOB storage first
 if ($has_image_data && $has_image_mime) {
     $stmt = $conn->prepare("SELECT image_data, image_mime FROM photos WHERE id = ? LIMIT 1");
     if ($stmt) {
@@ -46,38 +48,42 @@ if ($has_image_data && $has_image_mime) {
         }
         $stmt->close();
     }
-} else {
-    // Fallback: try image column (file path)
-    if (in_array('image', $columns, true)) {
-        $stmt = $conn->prepare("SELECT image FROM photos WHERE id = ? LIMIT 1");
-        if ($stmt) {
-            $stmt->bind_param("i", $photo_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if ($result && $result->num_rows > 0) {
-                $row = $result->fetch_assoc();
-                $image_path = $row['image'] ?? '';
-                // Serve from file system if image path exists
-                if (!empty($image_path) && file_exists('../' . $image_path)) {
-                    header('Content-Type: ' . mime_content_type('../' . $image_path));
-                    readfile('../' . $image_path);
-                    exit();
-                }
-            }
-            $stmt->close();
-        }
-    }
 }
 
-// If photo data exists, serve it
+// If BLOB found, serve it
 if ($photo && !empty($photo['image_data'])) {
     $mime = $photo['image_mime'] ?? 'image/jpeg';
-    header('Content-Type: ' . htmlspecialchars($mime));
+    header('Content-Type: ' . $mime);
     echo $photo['image_data'];
     exit();
 }
 
+// Fallback: try file path storage
+if ($has_image_path) {
+    $stmt = $conn->prepare("SELECT image FROM photos WHERE id = ? LIMIT 1");
+    if ($stmt) {
+        $stmt->bind_param("i", $photo_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $image_path = $row['image'] ?? '';
+            if (!empty($image_path)) {
+                // Image path is relative to project root (e.g., images/photo.jpg)
+                $full_path = dirname(__DIR__) . '/' . ltrim($image_path, '/');
+                if (file_exists($full_path)) {
+                    $mime = mime_content_type($full_path) ?: 'image/jpeg';
+                    header('Content-Type: ' . $mime);
+                    readfile($full_path);
+                    exit();
+                }
+            }
+        }
+        $stmt->close();
+    }
+}
+
 // No photo found
-header('HTTP/1.0 404 Not Found');
+http_response_code(404);
 echo 'Photo not found';
 ?>

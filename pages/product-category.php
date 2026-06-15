@@ -1,20 +1,21 @@
 <?php
-require_once 'auth_required.php';
-include("connection.php");
+// pages/product-category.php – Fixed paths using BASE_URL from config.php
 
-$fallback_image = 'images/fs.broiler-chicks.avif';
+require_once dirname(__DIR__) . '/config.php';
+require_once dirname(__DIR__) . '/auth_required.php';
+require_once dirname(__DIR__) . '/connection.php';
+
+$fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
 
 function is_recent_product(string $created_at, int $days = 14): bool
 {
     if ($created_at === '') {
         return false;
     }
-
     $timestamp = strtotime($created_at);
     if ($timestamp === false) {
         return false;
     }
-
     return $timestamp >= strtotime('-' . $days . ' days');
 }
 
@@ -50,9 +51,9 @@ if ($products_result) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $category_data['title']; ?> | Kalungu Quality Feeds</title>
+    <title><?php echo htmlspecialchars($category_data['title']); ?> | Kalungu Quality Feeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/joy.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <style>
         .category-hero {
@@ -133,13 +134,13 @@ if ($products_result) {
     </style>
 </head>
 <body>
-    <?php include 'header.php'; ?>
+    <?php include dirname(__DIR__) . '/includes/header.php'; ?>
 
     <!-- Category Hero Section -->
     <section class="category-hero">
         <div class="container">
-            <h1><i class="<?php echo $category_data['icon']; ?> me-2"></i><?php echo $category_data['title']; ?></h1>
-            <p><?php echo $category_data['description']; ?></p>
+            <h1><i class="<?php echo htmlspecialchars($category_data['icon']); ?> me-2"></i><?php echo htmlspecialchars($category_data['title']); ?></h1>
+            <p><?php echo htmlspecialchars($category_data['description']); ?></p>
         </div>
     </section>
 
@@ -149,17 +150,17 @@ if ($products_result) {
             <!-- Breadcrumb -->
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-                    <li class="breadcrumb-item"><a href="product.php">Products</a></li>
-                    <li class="breadcrumb-item active"><?php echo $category_data['title']; ?></li>
+                    <li class="breadcrumb-item"><a href="<?php echo BASE_URL; ?>/index.php">Home</a></li>
+                    <li class="breadcrumb-item"><a href="<?php echo BASE_URL; ?>/pages/product.php">Products</a></li>
+                    <li class="breadcrumb-item active"><?php echo htmlspecialchars($category_data['title']); ?></li>
                 </ol>
             </nav>
 
             <!-- Category Introduction -->
             <div class="category-intro">
-                <h3 style="color: #2e7d32; margin-bottom: 1rem;">About <?php echo $category_data['title']; ?></h3>
+                <h3 style="color: #2e7d32; margin-bottom: 1rem;">About <?php echo htmlspecialchars($category_data['title']); ?></h3>
                 <p style="color: #333; margin-bottom: 0;">
-                    Explore our complete range of <?php echo strtolower($category_data['title']); ?>. 
+                    Explore our complete range of <?php echo strtolower(htmlspecialchars($category_data['title'])); ?>. 
                     Each product is carefully selected and quality-tested to ensure the best results for your farming operation. 
                     Click on any product to view detailed information, add it to your cart, and place an order when ready.
                 </p>
@@ -179,10 +180,10 @@ if ($products_result) {
                                 </div>
                                 <h5 class="card-title"><?php echo htmlspecialchars($product['name']); ?></h5>
                                 <p class="card-text text-muted small flex-grow-1"><?php echo htmlspecialchars($product['description']); ?></p>
-                                <a href="product-details.php?product=<?php echo htmlspecialchars($product['slug']); ?>" class="btn btn-view btn-sm">
+                                <a href="<?php echo BASE_URL; ?>/product-details.php?product=<?php echo urlencode($product['slug']); ?>" class="btn btn-view btn-sm">
                                     <i class="fas fa-eye me-2"></i>View Details
                                 </a>
-                                <a href="add_to_cart.php?product=<?php echo htmlspecialchars($product['slug']); ?>" class="btn btn-cart btn-sm">
+                                <a href="<?php echo BASE_URL; ?>/add_to_cart.php?product=<?php echo urlencode($product['slug']); ?>" class="btn btn-cart btn-sm">
                                     <i class="fas fa-cart-plus me-2"></i>Add to Cart
                                 </a>
                             </div>
@@ -199,7 +200,7 @@ if ($products_result) {
                         <p style="color: #333; margin-bottom: 1rem;">
                             Our expert team is ready to help you select the best products for your specific needs.
                         </p>
-                        <a href="contact.php" class="btn" style="background-color: #2e7d32; color: white;">
+                        <a href="<?php echo BASE_URL; ?>/pages/contact.php" class="btn" style="background-color: #2e7d32; color: white;">
                             <i class="fas fa-phone me-2"></i>Contact Us for Expert Advice
                         </a>
                     </div>
@@ -208,7 +209,7 @@ if ($products_result) {
         </div>
     </section>
 
-    <?php include './footer.php'; ?>
+    <?php include dirname(__DIR__) . '/includes/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>

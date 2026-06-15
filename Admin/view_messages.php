@@ -1,7 +1,14 @@
 <?php
-require_once __DIR__ . '/../auth_required.php';
+// Admin/view_messages.php – Fixed paths using BASE_URL from config.php
+require_once dirname(__DIR__) . '/config.php';
+require_once dirname(__DIR__) . '/auth_required.php';
+require_once dirname(__DIR__) . '/connection.php';
 
-include 'connection.php';
+// Ensure only admin can access
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header('Location: ' . BASE_URL . '/pages/login.php');
+    exit();
+}
 
 $messages = [];
 $unread_count = 0;
@@ -130,13 +137,13 @@ $unread_count = count(array_filter($messages, static function ($message) {
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 <style>
     :root {
-            --leaf-900: #0f3c2a;
-            --leaf-700: #1f6b3f;
-            --leaf-600: #2f8952;
-            --cream: #f6fbf6;
-            --sun: #ffd166;
-            --ink: #132019;
-        }
+        --leaf-900: #0f3c2a;
+        --leaf-700: #1f6b3f;
+        --leaf-600: #2f8952;
+        --cream: #f6fbf6;
+        --sun: #ffd166;
+        --ink: #132019;
+    }
     body { background: #f0f2f5; }
     .sidebar {
         background: linear-gradient(135deg, var(--leaf-900), var(--leaf-700));
@@ -200,13 +207,13 @@ $unread_count = count(array_filter($messages, static function ($message) {
             <small>Admin Panel</small>
         </div>
         <nav class="nav flex-column">
-            <a class="nav-link" href="admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
-            <a class="nav-link" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
-            <a class="nav-link" href="view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
-            <a class="nav-link active" href="view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
-            <a class="nav-link" href="view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
-            <a class="nav-link" href="login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
-            <a class="nav-link text-danger mt-3" href="adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
+            <a class="nav-link active" href="<?php echo BASE_URL; ?>/view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
+            <a class="nav-link text-danger mt-3" href="<?php echo BASE_URL; ?>/adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
         </nav>
     </div>
 

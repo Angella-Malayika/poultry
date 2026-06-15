@@ -4,17 +4,17 @@
  * Run this file once to create the categories and products tables
  * and populate them with sample data.
  *
- * Visit: http://localhost/project/setup_products.php
+ * Visit: http://localhost/poultry/setup_products.php
  */
 
-session_start();
+require_once __DIR__ . '/config.php';
 
 // Only allow admin users to run this script
 if (!isset($_SESSION['logged_in']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     die('Access denied. Please login as admin first.');
 }
 
-include("connection.php");
+require_once __DIR__ . '/connection.php';
 
 $messages = [];
 $errors = [];
@@ -83,7 +83,7 @@ foreach ($categories_data as $cat) {
 
     $sql = "INSERT INTO categories (slug, title, description, icon, sort_order)
             VALUES ('$slug', '$title', '$description', '$icon', $sort_order)
-            ON DUPLICATE KEY UPDATE title = VALUES(title), description = VALUES(description)";
+            ON DUPLICATE KEY UPDATE title = VALUES(title), description = VALUES(description), icon = VALUES(icon), sort_order = VALUES(sort_order)";
 
     if (mysqli_query($conn, $sql)) {
         $messages[] = "Category '$title' added/updated.";
@@ -244,7 +244,7 @@ foreach ($products_data as $prod) {
         continue;
     }
     $cat_row = mysqli_fetch_assoc($cat_result);
-    $category_id = $cat_row['id'];
+    $category_id = (int) $cat_row['id'];
 
     $slug = mysqli_real_escape_string($conn, $prod[1]);
     $name = mysqli_real_escape_string($conn, $prod[2]);
@@ -256,10 +256,17 @@ foreach ($products_data as $prod) {
     $storage = mysqli_real_escape_string($conn, $prod[8]);
     $sort_order = (int)$prod[10];
 
-    $sql = "INSERT INTO products (category_id, slug, name, image, description, benefits, usage_info, packaging, storage, sort_order)
-            VALUES ($category_id, '$slug', '$name', '$image', '$description', '$benefits', '$usage_info', '$packaging', '$storage', $sort_order)
-            ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description), benefits = VALUES(benefits),
-            usage_info = VALUES(usage_info), packaging = VALUES(packaging), storage = VALUES(storage)";
+    $sql = "INSERT INTO products (category_id, slug, name, image, description, benefits, usage_info, packaging, storage, sort_order, is_active)
+            VALUES ($category_id, '$slug', '$name', '$image', '$description', '$benefits', '$usage_info', '$packaging', '$storage', $sort_order, 1)
+            ON DUPLICATE KEY UPDATE 
+                name = VALUES(name),
+                description = VALUES(description),
+                benefits = VALUES(benefits),
+                usage_info = VALUES(usage_info),
+                packaging = VALUES(packaging),
+                storage = VALUES(storage),
+                sort_order = VALUES(sort_order),
+                is_active = 1";
 
     if (mysqli_query($conn, $sql)) {
         $messages[] = "Product '$name' added/updated.";
@@ -307,9 +314,9 @@ mysqli_close($conn);
         <?php endif; ?>
 
         <div class="mt-4">
-            <a href="product.php" class="btn btn-success"><i class="fas fa-eye"></i> View Products</a>
-            <a href="product-category.php?category=feeds" class="btn btn-primary"><i class="fas fa-list"></i> View Feeds Category</a>
-            <a href="index.php" class="btn btn-secondary"><i class="fas fa-home"></i> Go Home</a>
+            <a href="<?php echo BASE_URL; ?>/pages/product.php" class="btn btn-success"><i class="fas fa-eye"></i> View Products</a>
+            <a href="<?php echo BASE_URL; ?>/pages/product-category.php?category=feeds" class="btn btn-primary"><i class="fas fa-list"></i> View Feeds Category</a>
+            <a href="<?php echo BASE_URL; ?>/index.php" class="btn btn-secondary"><i class="fas fa-home"></i> Go Home</a>
         </div>
 
         <div class="alert alert-warning mt-4">

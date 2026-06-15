@@ -1,7 +1,14 @@
 <?php
-require_once __DIR__ . '/../Admin/admin_auth_required.php';
+// website/upload_photo.php – Fixed paths using BASE_URL from config.php
+require_once dirname(__DIR__) . '/config.php';
 
-include '../connection.php';
+// Admin authentication – ensure user is logged in and is admin
+if (!isset($_SESSION['logged_in']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header('Location: ' . BASE_URL . '/pages/login.php');
+    exit();
+}
+
+require_once dirname(__DIR__) . '/connection.php';
 
 $message = '';
 $message_type = 'success';
@@ -211,7 +218,8 @@ if (isset($_POST['upload'])) {
                     $stmt->send_long_data(1, $image_data);
 
                     if ($stmt->execute()) {
-                        header('Location: ../product.php?uploaded=1&section=' . urlencode($selected_section) . '#' . $selected_section);
+                        // Redirect to product page with section anchor
+                        header('Location: ' . BASE_URL . '/pages/product.php?uploaded=1&section=' . urlencode($selected_section) . '#' . $selected_section);
                         exit();
                     } else {
                         $message = 'Error uploading file to database.';
@@ -266,7 +274,6 @@ if ($schema_error === '') {
             --sun: #ffd166;
             --ink: #132019;
         }
-
         body {
             font-family: 'Manrope', sans-serif;
             color: var(--ink);
@@ -276,7 +283,6 @@ if ($schema_error === '') {
                 linear-gradient(160deg, #f5f8f3 0%, #eef6ef 45%, #edf7f1 100%);
             min-height: 100vh;
         }
-
         .sidebar {
             background: linear-gradient(165deg, var(--leaf-900), var(--leaf-700));
             min-height: 100vh;
@@ -284,7 +290,6 @@ if ($schema_error === '') {
             padding-top: 20px;
             box-shadow: 6px 0 30px rgba(14, 46, 30, 0.2);
         }
-
         .sidebar .nav-link {
             color: rgba(255,255,255,0.84);
             padding: 12px 20px;
@@ -292,36 +297,30 @@ if ($schema_error === '') {
             margin: 4px 10px;
             transition: transform 0.2s ease, background 0.2s ease;
         }
-
         .sidebar .nav-link:hover,
         .sidebar .nav-link.active {
             background: rgba(255,255,255,0.14);
             color: #fff;
             transform: translateX(2px);
         }
-
         .sidebar .nav-link i { margin-right: 10px; font-size: 1.05rem; }
-
         .brand {
             padding: 8px 20px 26px;
             border-bottom: 1px solid rgba(255,255,255,0.16);
             margin-bottom: 16px;
         }
-
         .brand h4 {
             margin: 0;
             font-family: 'Sora', sans-serif;
             font-weight: 700;
             letter-spacing: 0.3px;
         }
-
         .top-bar {
             background: rgba(255,255,255,0.86);
             border-bottom: 1px solid rgba(31, 107, 63, 0.14);
             padding: 16px 26px;
             backdrop-filter: blur(6px);
         }
-
         .hero {
             border: 0;
             border-radius: 20px;
@@ -331,7 +330,6 @@ if ($schema_error === '') {
             position: relative;
             animation: rise 0.45s ease;
         }
-
         .hero::after {
             content: '';
             position: absolute;
@@ -342,13 +340,11 @@ if ($schema_error === '') {
             right: -80px;
             top: -110px;
         }
-
         .hero h2 {
             font-family: 'Sora', sans-serif;
             font-size: 1.6rem;
             letter-spacing: 0.3px;
         }
-
         .upload-card,
         .recent-card {
             border: 0;
@@ -357,14 +353,12 @@ if ($schema_error === '') {
             box-shadow: 0 16px 35px rgba(17, 40, 26, 0.09);
             animation: rise 0.45s ease;
         }
-
         .drop-hint {
             border: 2px dashed rgba(31, 107, 63, 0.35);
             border-radius: 14px;
             padding: 22px;
             background: linear-gradient(180deg, #f8fdf9, #f1f8f2);
         }
-
         .preview-wrap {
             display: none;
             border-radius: 14px;
@@ -372,13 +366,11 @@ if ($schema_error === '') {
             margin-top: 14px;
             border: 1px solid rgba(31, 107, 63, 0.15);
         }
-
         .preview-wrap img {
             width: 100%;
             max-height: 260px;
             object-fit: cover;
         }
-
         .chip {
             display: inline-flex;
             align-items: center;
@@ -390,7 +382,6 @@ if ($schema_error === '') {
             font-weight: 700;
             font-size: 0.84rem;
         }
-
         .recent-photo {
             border-radius: 14px;
             overflow: hidden;
@@ -398,47 +389,36 @@ if ($schema_error === '') {
             border: 1px solid rgba(19, 32, 25, 0.09);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-
         .recent-photo:hover {
             transform: translateY(-3px);
             box-shadow: 0 10px 20px rgba(17, 40, 26, 0.12);
         }
-
         .recent-photo img {
             width: 100%;
             height: 140px;
             object-fit: cover;
         }
-
         .recent-meta {
             padding: 10px;
             font-size: 0.85rem;
             color: #496050;
         }
-
         .btn-upload {
             background: linear-gradient(140deg, var(--leaf-700), var(--leaf-600));
             border: 0;
             padding: 10px 20px;
             font-weight: 700;
         }
-
         .btn-upload:hover {
             opacity: 0.95;
         }
-
         @keyframes rise {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         @media (max-width: 991px) {
-            .top-bar {
-                padding: 14px 16px;
-            }
-            .hero h2 {
-                font-size: 1.35rem;
-            }
+            .top-bar { padding: 14px 16px; }
+            .hero h2 { font-size: 1.35rem; }
         }
     </style>
 </head>
@@ -452,12 +432,12 @@ if ($schema_error === '') {
             <small>Admin Panel</small>
         </div>
         <nav class="nav flex-column">
-            <a class="nav-link" href="admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
-            <a class="nav-link active" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Upload Photo</a>
-            <a class="nav-link" href="view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
-            <a class="nav-link" href="view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
-            <a class="nav-link" href="gallery.php"><i class="bi bi-display"></i> User Gallery</a>
-            <a class="nav-link text-danger mt-3" href="adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+            <a class="nav-link active" href="<?php echo BASE_URL; ?>/website/upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Upload Photo</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/gallery.php"><i class="bi bi-display"></i> User Gallery</a>
+            <a class="nav-link text-danger mt-3" href="<?php echo BASE_URL; ?>/Admin/adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
         </nav>
     </div>
 
@@ -466,7 +446,7 @@ if ($schema_error === '') {
             <h5 class="mb-0"><i class="bi bi-cloud-arrow-up me-2"></i>Upload Photos</h5>
             <div class="d-flex align-items-center gap-3">
                 <span class="text-muted">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
-                <a href="adlogout.php" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-left"></i> Logout</a>
+                <a href="<?php echo BASE_URL; ?>/Admin/adlogout.php" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-left"></i> Logout</a>
             </div>
         </div>
 
@@ -530,7 +510,7 @@ if ($schema_error === '') {
                                     <button type="submit" name="upload" class="btn btn-success btn-upload">
                                         <i class="bi bi-cloud-upload me-1"></i> Upload to Database
                                     </button>
-                                    <a href="../product.php" class="btn btn-outline-success">
+                                    <a href="<?php echo BASE_URL; ?>/pages/product.php" class="btn btn-outline-success">
                                         <i class="bi bi-box-seam me-1"></i> View Products Page
                                     </a>
                                 </div>
@@ -552,7 +532,7 @@ if ($schema_error === '') {
                                     <?php foreach ($recent_photos as $photo): ?>
                                     <div class="col-6">
                                         <div class="recent-photo">
-                                            <img src="photo.php?id=<?php echo intval($photo['id']); ?>" alt="Recent upload">
+                                            <img src="<?php echo BASE_URL; ?>/website/photo.php?id=<?php echo intval($photo['id']); ?>" alt="Recent upload">
                                             <div class="recent-meta">
                                                 #<?php echo intval($photo['id']); ?>
                                                 <?php

@@ -1,42 +1,47 @@
 <?php
-require_once 'auth_required.php';
+// process_message.php – Fixed paths using BASE_URL from config.php
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/auth_required.php';
 
-// Load email configuration
-$emailConfig = require_once 'email_config.php';
+// Load email configuration (returns array)
+$emailConfig = require_once __DIR__ . '/email_config.php';
 
 // Include database connection
-include("connection.php");
+require_once __DIR__ . '/connection.php';
 
 // Get form data and sanitize
 $name = htmlspecialchars(trim($_POST['name'] ?? ''));
 $email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
 $phone = htmlspecialchars(trim($_POST['phone'] ?? 'Not provided'));
-if ($phone!== '' && !preg_match('/^\d{10}$/', $phone)){
-    $_SESSION['error'] = "phone number must be exactly 10 digits and contain numbers onlys.";
-    header("Location: contact.php");
+
+// Validate phone if provided
+if ($phone !== 'Not provided' && $phone !== '' && !preg_match('/^\d{10}$/', $phone)) {
+    $_SESSION['error'] = "Phone number must be exactly 10 digits and contain numbers only.";
+    header("Location: " . BASE_URL . "/pages/contact.php");
     exit();
 }
+
 $subject = htmlspecialchars(trim($_POST['subject'] ?? ''));
 $message = htmlspecialchars(trim($_POST['message'] ?? ''));
 
 // Validate required fields
 if (empty($name) || empty($email) || empty($subject) || empty($message)) {
     $_SESSION['error'] = "Please fill in all required fields.";
-    header("Location: contact.php");
+    header("Location: " . BASE_URL . "/pages/contact.php");
     exit();
 }
 
 // Validate email format
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $_SESSION['error'] = "Invalid email format.";
-    header("Location: contact.php");
+    header("Location: " . BASE_URL . "/pages/contact.php");
     exit();
 }
 
 // Validate Gmail address
 if (!preg_match('/@gmail\.com$/', $email)) {
     $_SESSION['error'] = "Please use a Gmail address (@gmail.com).";
-    header("Location: contact.php");
+    header("Location: " . BASE_URL . "/pages/contact.php");
     exit();
 }
 
@@ -91,22 +96,31 @@ try {
     $stmt->execute();
     $stmt->close();
 
-    $sent = sendHTMLEmail(
-        $emailConfig['admin_email'],
-        $emailConfig['admin_name'],
-        $email_subject,
-        $email_body,
-        $plain_text,
-        $email,
-        $name
-    );
+    // Use the email_config function (assuming sendHTMLEmail is defined in email_config.php)
+    if (function_exists('sendHTMLEmail')) {
+        $sent = sendHTMLEmail(
+            $emailConfig['admin_email'],
+            $emailConfig['admin_name'],
+            $email_subject,
+            $email_body,
+            $plain_text,
+            $email,
+            $name
+        );
+    } else {
+        // Fallback to mail() if function not defined
+        $headers = "MIME-Version: 1.0" . "\r\n";
+        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+        $headers .= "From: $email" . "\r\n";
+        $sent = mail($emailConfig['admin_email'], $email_subject, $email_body, $headers);
+    }
 
     if ($sent) {
         $_SESSION['success'] = "Thank you for contacting us! Your message has been sent successfully. We'll get back to you soon.";
     } else {
-        // Log the message to database or file as backup
+        // Log the message to file as backup
         $log_entry = date('Y-m-d H:i:s') . " - Failed to send email from: $name ($email)\n";
-        file_put_contents('contact_log.txt', $log_entry, FILE_APPEND);
+        file_put_contents(__DIR__ . '/contact_log.txt', $log_entry, FILE_APPEND);
         
         $_SESSION['error'] = "Sorry, there was an error sending your message. Please try contacting us directly at kalungufeeds167@gmail.com or call us.";
     }
@@ -115,6 +129,6 @@ try {
 }
 
 // Redirect back to contact page
-header("Location: contact.php");
+header("Location: " . BASE_URL . "/pages/contact.php");
 exit();
 ?>

@@ -82,7 +82,7 @@ function sendSMTPEmail($to_email, $to_name, $subject, $html_body, $plain_text = 
     }
 
     $smtp_password = $emailConfig['smtp_password'] ?? '';
-    $smtp_password = str_replace(' ', '', $smtp_password);
+    $smtp_password = str_replace(' ', '', $smtp_password); // remove any spaces
 
     try {
         $mail = new PHPMailer(true);
@@ -119,19 +119,6 @@ function sendSMTPEmail($to_email, $to_name, $subject, $html_body, $plain_text = 
         error_log('SMTP send failed: ' . $e->getMessage());
         return false;
     }
-    
-    // Email headers
-    $headers = "MIME-Version: 1.0\r\n";
-    $headers .= "Content-Type: text/html; charset=" . $emailConfig['charset'] . "\r\n";
-    $headers .= "From: " . $emailConfig['from_name'] . " <" . $emailConfig['from_email'] . ">\r\n";
-    $headers .= "Reply-To: " . $emailConfig['from_email'] . "\r\n";
-    $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
-    $headers .= "X-Priority: 3\r\n";
-    
-    // Send email using PHP mail() function
-    $result = mail($to_email, $subject, $html_body, $headers);
-    
-    return $result;
 }
 
 /**
@@ -215,8 +202,6 @@ function sendOrderConfirmationEmail($order_details) {
  * Send welcome email to new users
  */
 function sendWelcomeEmail($user_email, $username) {
-    global $emailConfig;
-    
     $html_body = "
     <html>
     <head>

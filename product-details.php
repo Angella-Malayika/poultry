@@ -1,7 +1,9 @@
-
 <?php
-require_once 'auth_required.php';
-include("connection.php");
+// product-details.php – Fixed paths using BASE_URL from config.php
+
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/auth_required.php';
+require_once __DIR__ . '/connection.php';
 
 // Get product from URL
 $product_slug = isset($_GET['product']) ? mysqli_real_escape_string($conn, $_GET['product']) : '';
@@ -16,7 +18,7 @@ $result = mysqli_query($conn, $sql);
 
 // Redirect if product not found
 if (!$result || mysqli_num_rows($result) == 0) {
-    header('Location: product.php');
+    header('Location: ' . BASE_URL . '/pages/product.php');
     exit;
 }
 
@@ -33,7 +35,7 @@ $benefits = !empty($product['benefits']) ? explode('|', $product['benefits']) : 
     <meta name="google-site-verification" content="DxOSWhae3DL7OIIjettiAneNnAyV8CYP49sqXRnojeg" />
     <title><?php echo htmlspecialchars($product['name']); ?> - Product Details | Kalungu Quality Feeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="./assets/css/joy.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/joy.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <style>
         .product-detail-hero {
@@ -89,15 +91,15 @@ $benefits = !empty($product['benefits']) ? explode('|', $product['benefits']) : 
     </style>
 </head>
 <body>
-    <?php include 'header.php'; ?>
+    <?php include __DIR__ . '/includes/header.php'; ?>
 
     <!-- Product Hero Section -->
     <section class="product-detail-hero">
         <div class="container">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-                    <li class="breadcrumb-item"><a href="product.php">Products</a></li>
+                    <li class="breadcrumb-item"><a href="<?php echo BASE_URL; ?>/index.php">Home</a></li>
+                    <li class="breadcrumb-item"><a href="<?php echo BASE_URL; ?>/pages/product.php">Products</a></li>
                     <li class="breadcrumb-item active"><?php echo htmlspecialchars($product['name']); ?></li>
                 </ol>
             </nav>
@@ -122,18 +124,18 @@ $benefits = !empty($product['benefits']) ? explode('|', $product['benefits']) : 
 
                     <!-- Call to Action -->
                     <div class="cta-buttons">
-                        <a href="add_to_cart.php?product=<?php echo urlencode($product['slug']); ?>" 
+                        <a href="<?php echo BASE_URL; ?>/add_to_cart.php?product=<?php echo urlencode($product['slug']); ?>" 
                         class="btn btn-lg btn-cart-detail">
                             <i class="fas fa-cart-plus me-2"></i>Add to Cart
                         </a>
-                        <a href="order.php?product=<?php echo urldecode($product['slug']); ?>" 
+                        <a href="<?php echo BASE_URL; ?>/pages/order.php?product=<?php echo urlencode($product['slug']); ?>" 
                         class="btn btn-lg" style="background-color: white; color: #2e7d32; border: 2px solid #2e7d32;">
                             <i class="fas fa-shopping-cart me-2"></i>Order Now
                         </a>
-                        <a href="contact.php" class="btn btn-lg" style="background-color: white; color: #2e7d32; border: 2px solid #2e7d32;">
+                        <a href="<?php echo BASE_URL; ?>/pages/contact.php" class="btn btn-lg" style="background-color: white; color: #2e7d32; border: 2px solid #2e7d32;">
                             <i class="fas fa-phone me-2"></i>Contact Us
                         </a>
-                        <a href="product.php" class="btn btn-outline-secondary btn-lg">
+                        <a href="<?php echo BASE_URL; ?>/pages/product.php" class="btn btn-outline-secondary btn-lg">
                             <i class="fas fa-arrow-left me-2"></i>Back to Products
                         </a>
                     </div>
@@ -175,7 +177,7 @@ $benefits = !empty($product['benefits']) ? explode('|', $product['benefits']) : 
         </div>
     </section>
 
-    <?php include  'footer.php'; ?>
+    <?php include __DIR__ . '/includes/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>

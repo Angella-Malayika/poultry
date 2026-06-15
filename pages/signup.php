@@ -1,11 +1,20 @@
 <?php
-include '../connection.php';
+// pages/signup.php
 
-session_start();
+// Load config – use absolute filesystem path
+require_once __DIR__ . '/../config.php';
 
-$message = ''; // Initialize message variable
+// If BASE_URL is still not defined, set it manually (fallback)
+if (!defined('BASE_URL')) {
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+    $host = $_SERVER['HTTP_HOST'];
+    define('BASE_URL', $protocol . $host . '/poultry');
+}
 
-// Fixed missing opening bracket { and added security (prepared statements)
+require_once __DIR__ . '/../connection.php';
+
+$message = '';
+
 if (isset($_POST['signup'])) {
     $username = trim($_POST['username']);
     $email = trim($_POST['email']);
@@ -17,7 +26,7 @@ if (isset($_POST['signup'])) {
     } elseif ($password !== $confirm_password) {
         $message = '<div class="alert alert-danger">Passwords do not match!</div>';
     } else {
-        // Detect actual user table columns to support both password/password_hashed schemas.
+        // Detect columns
         $cols = [];
         $col_res = $conn->query("SHOW COLUMNS FROM users");
         if ($col_res) {
@@ -35,13 +44,10 @@ if (isset($_POST['signup'])) {
         $has_role = in_array('role', $cols, true);
 
         if ($pass_col === null || !$has_username || !$has_email) {
-            $message = '<div class="alert alert-danger">Database configuration error. Please contact the administrator.</div>';
+            $message = '<div class="alert alert-danger">Database configuration error.</div>';
         } else {
-            // Use prepared statements to check if email OR username already exists
             $checkStmt = $conn->prepare("SELECT 1 FROM users WHERE email = ? OR username = ? LIMIT 1");
-            if (!$checkStmt) {
-                $message = '<div class="alert alert-danger">Something went wrong. Please try again later.</div>';
-            } else {
+            if ($checkStmt) {
                 $checkStmt->bind_param("ss", $email, $username);
                 $checkStmt->execute();
                 $result = $checkStmt->get_result();
@@ -49,36 +55,32 @@ if (isset($_POST['signup'])) {
                 if ($result && $result->num_rows > 0) {
                     $message = '<div class="alert alert-danger">Email or Username already exists!</div>';
                 } else {
-                    // Hash the password securely
                     $hashedpassword = password_hash($password, PASSWORD_DEFAULT);
-
                     $insert_sql = "INSERT INTO users (username, email, `{$pass_col}`";
                     $insert_sql .= $has_role ? ", role) VALUES (?, ?, ?, ?)" : ") VALUES (?, ?, ?)";
                     $insertStmt = $conn->prepare($insert_sql);
-
-                    if (!$insertStmt) {
-                        $message = '<div class="alert alert-danger">Error: Something went wrong.</div>';
-                    } else {
+                    if ($insertStmt) {
                         if ($has_role) {
                             $defaultRole = 'user';
                             $insertStmt->bind_param("ssss", $username, $email, $hashedpassword, $defaultRole);
                         } else {
                             $insertStmt->bind_param("sss", $username, $email, $hashedpassword);
                         }
-
                         if ($insertStmt->execute()) {
-                            // Registration successful - Send welcome email
-                            require_once '../email_config.php';
+                            require_once __DIR__ . '/../email_config.php';
                             sendWelcomeEmail($email, $username);
-                            
-                            $message = '<div class="alert alert-success">Account created successfully! A welcome email has been sent to your inbox. <a href="login.php">Login here</a></div>';
+                            $message = '<div class="alert alert-success">Account created! <a href="' . BASE_URL . '/pages/login.php">Login here</a></div>';
                         } else {
-                            $message = '<div class="alert alert-danger">Error: Something went wrong.</div>';
+                            $message = '<div class="alert alert-danger">Error creating account.</div>';
                         }
                         $insertStmt->close();
+                    } else {
+                        $message = '<div class="alert alert-danger">Error preparing statement.</div>';
                     }
                 }
                 $checkStmt->close();
+            } else {
+                $message = '<div class="alert alert-danger">Database error.</div>';
             }
         }
     }
@@ -89,7 +91,7 @@ if (isset($_POST['signup'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
+    <title>Sign Up | Kalungu Quality Feeds</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <style>
@@ -100,7 +102,6 @@ if (isset($_POST['signup'])) {
             --white: #f1f8e9;
             --input-border: #2e7d32;
         }
-
         body {
             background: var(--light-bg);
             min-height: 100vh;
@@ -120,11 +121,8 @@ if (isset($_POST['signup'])) {
         .register-header {
             text-align: center;
             margin-bottom: 30px;
-            border-bottom: none;
-            padding-bottom: 8px;
             padding-bottom: 20px;
         }
-
         .register-logo {
             display: inline-flex;
             flex-direction: column;
@@ -133,23 +131,15 @@ if (isset($_POST['signup'])) {
             letter-spacing: 0.4px;
             margin-bottom: 12px;
         }
-
         .register-logo .logo-name {
             font-weight: 800;
             font-size: 1.1rem;
             color: var(--primary-color);
-            line-height: 1.1;
         }
-
         .register-logo .logo-subtitle {
             font-weight: 600;
             font-size: 0.72rem;
             color: var(--text-color);
-        }
-        .register-header i {
-            font-size: 50px;
-            color: var(--primary-color);
-            margin-bottom: 10px;
         }
         .register-header h2 {
             color: var(--primary-color);
@@ -158,26 +148,21 @@ if (isset($_POST['signup'])) {
         .form-label {
             color: var(--primary-color);
             font-weight: bold;
-            margin-bottom: 0.5rem;
         }
         .form-control {
             background-color: var(--white);
             border: 2px solid var(--input-border);
-            color: var(--text-color);
             padding: 0.75rem;
             border-radius: 6px;
-            transition: all 0.3s ease;
         }
         .form-control:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 10px rgba(46, 125, 50, 0.2);
+            box-shadow: 0 0 10px rgba(46,125,50,0.2);
             background-color: white;
         }
-
         .password-group {
             position: relative;
         }
-
         .password-toggle {
             position: absolute;
             right: 0.85rem;
@@ -186,18 +171,8 @@ if (isset($_POST['signup'])) {
             border: none;
             background: transparent;
             color: var(--primary-color);
-            padding: 0;
             cursor: pointer;
-            font-size: 1rem;
-            line-height: 1;
         }
-
-        .password-toggle:focus-visible {
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
-            border-radius: 4px;
-        }
-
         .password-input {
             padding-right: 2.5rem;
         }
@@ -209,26 +184,28 @@ if (isset($_POST['signup'])) {
             font-weight: bold;
             color: white;
             border-radius: 6px;
-            transition: all 0.3s ease;
         }
         .btn-register:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(46, 125, 50, 0.3);
-            color: white;
+            box-shadow: 0 8px 15px rgba(46,125,50,0.3);
         }
-        .text-center { margin-top: 20px; }
-        .text-center a { color: var(--primary-color); text-decoration: none; font-weight: bold; }
-        .text-center a:hover { color: #1b5e20; text-decoration: underline; }
+        .text-center a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .text-center a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="register-container">
         <div class="register-header">
-            <div class="register-logo" aria-label="Kalungu Quality Feeds">
+            <div class="register-logo">
                 <span class="logo-name">Kalungu</span>
                 <span class="logo-subtitle">Quality Feeds</span>
             </div>
-            <!-- <i class="fas fa-user-plus"></i> -->
             <h2>Create Account</h2>
             <p class="text-muted">Sign up to get started</p>
         </div>
@@ -240,40 +217,36 @@ if (isset($_POST['signup'])) {
                 <label class="form-label"><i class="fas fa-user"></i> Username</label>
                 <input type="text" class="form-control" name="username" required>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label"><i class="fas fa-envelope"></i> Email</label>
                 <input type="email" class="form-control" name="email" required>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label"><i class="fas fa-lock"></i> Password</label>
                 <div class="password-group">
                     <input type="password" class="form-control password-input" id="password" name="password" required minlength="6">
-                    <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password" aria-pressed="false">
+                    <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label"><i class="fas fa-lock"></i> Confirm Password</label>
                 <div class="password-group">
                     <input type="password" class="form-control password-input" id="confirm_password" name="confirm_password" required minlength="6">
-                    <button type="button" class="password-toggle" id="toggleConfirmPassword" aria-label="Show confirm password" aria-pressed="false">
+                    <button type="button" class="password-toggle" id="toggleConfirmPassword" aria-label="Show confirm password">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
             </div>
-            
             <button type="submit" name="signup" class="btn btn-primary btn-register">
                 <i class="fas fa-user-plus"></i> Sign Up
             </button>
         </form>
         
         <div class="text-center mt-3">
-            <p>Already have an account? <a href="login.php">Login here</a></p>
-            <a href="index.php" class="text-muted"><i class="fas fa-home"></i> Back to Home</a>
+            <p>Already have an account? <a href="<?php echo BASE_URL; ?>./login.php">Login here</a></p>
+            <a href="<?php echo BASE_URL; ?>/../index.php" class="text-muted"><i class="fas fa-home"></i> Back to Home</a>
         </div>
     </div>
     
@@ -282,25 +255,14 @@ if (isset($_POST['signup'])) {
         function bindPasswordToggle(inputId, toggleId) {
             const input = document.getElementById(inputId);
             const toggle = document.getElementById(toggleId);
-
-            if (!input || !toggle) {
-                return;
-            }
-
-            toggle.addEventListener('click', function () {
+            if (!input || !toggle) return;
+            toggle.addEventListener('click', function() {
                 const isHidden = input.type === 'password';
                 input.type = isHidden ? 'text' : 'password';
-                this.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-                this.setAttribute('aria-pressed', String(isHidden));
-
                 const icon = this.querySelector('i');
-                if (icon) {
-                    icon.classList.toggle('fa-eye');
-                    icon.classList.toggle('fa-eye-slash');
-                }
+                if (icon) icon.classList.toggle('fa-eye-slash');
             });
         }
-
         bindPasswordToggle('password', 'togglePassword');
         bindPasswordToggle('confirm_password', 'toggleConfirmPassword');
     </script>

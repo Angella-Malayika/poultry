@@ -1,17 +1,19 @@
 <?php
-session_start();
+// view_orders.php – Fixed paths using BASE_URL from config.php
+require_once __DIR__ . '/config.php';
 
 // Check if user is logged in and is an admin
 if (!isset($_SESSION['logged_in']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header('Location: login.php');
+    header('Location: ' . BASE_URL . '/pages/login.php');
     exit();
 }
 
 // Include database connection
-include("connection.php");
+require_once __DIR__ . '/connection.php';
+
 // Fetch all orders with customer email
 $sql = "SELECT o.*, u.email FROM orders o
-        JOIN users u ON o.user_id = u.user_id
+        JOIN users u ON o.user_id = u.id
         ORDER BY o.order_date DESC";
 $result = mysqli_query($conn, $sql);
 ?>
@@ -68,12 +70,12 @@ $result = mysqli_query($conn, $sql);
                     <tbody>
                         <?php while ($row = mysqli_fetch_assoc($result)): ?>
                             <tr>
-                                <td><strong>#<?php echo $row['id']; ?></strong></td>
+                                <td><strong>#<?php echo htmlspecialchars($row['id']); ?></strong></td>
                                 <td><?php echo htmlspecialchars($row['full_name']); ?></td>
                                 <td><a href="mailto:<?php echo htmlspecialchars($row['email']); ?>"><?php echo htmlspecialchars($row['email']); ?></a></td>
                                 <td><a href="tel:<?php echo htmlspecialchars($row['phone']); ?>"><?php echo htmlspecialchars($row['phone']); ?></a></td>
                                 <td><span class="badge bg-info"><?php echo htmlspecialchars($row['product']); ?></span></td>
-                                <td><?php echo $row['quantity']; ?></td>
+                                <td><?php echo htmlspecialchars($row['quantity']); ?></td>
                                 <td><?php echo htmlspecialchars($row['delivery_address']); ?></td>
                                 <td><?php echo date('M d, Y', strtotime($row['delivery_date'])); ?></td>
                                 <td><?php echo date('M d, Y H:i', strtotime($row['order_date'])); ?></td>
@@ -83,11 +85,11 @@ $result = mysqli_query($conn, $sql);
                                     <?php elseif ($row['status'] == 'completed'): ?>
                                         <span class="badge bg-success">Completed</span>
                                     <?php else: ?>
-                                        <span class="badge bg-secondary"><?php echo $row['status']; ?></span>
+                                        <span class="badge bg-secondary"><?php echo htmlspecialchars($row['status']); ?></span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <a href="order_detail.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-primary">
+                                    <a href="<?php echo BASE_URL; ?>/order_detail.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-primary">
                                         <i class="fas fa-eye"></i> Details
                                     </a>
                                 </td>
@@ -107,8 +109,8 @@ $result = mysqli_query($conn, $sql);
         <?php endif; ?>
         
         <div class="mt-4">
-            <a href="order.php" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Back to Order Form</a>
-            <a href="home.php" class="btn btn-secondary"><i class="fas fa-home"></i> Home</a>
+            <a href="<?php echo BASE_URL; ?>/pages/order.php" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Back to Order Form</a>
+            <a href="<?php echo BASE_URL; ?>/index.php" class="btn btn-secondary"><i class="fas fa-home"></i> Home</a>
         </div>
     </div>
     

@@ -1,7 +1,14 @@
 <?php
-require_once __DIR__ . '/../auth_required.php';
+// Admin/view_orders.php – Fixed paths using BASE_URL from config.php
+require_once dirname(__DIR__) . '/config.php';
+require_once dirname(__DIR__) . '/auth_required.php';
+require_once dirname(__DIR__) . '/connection.php';
 
-include 'connection.php';
+// Ensure only admin can access
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header('Location: ' . BASE_URL . '/pages/login.php');
+    exit();
+}
 
 $orders = [];
 $flash_message = '';
@@ -66,7 +73,7 @@ if ($table_check && mysqli_num_rows($table_check) > 0) {
 
     $query = "SELECT o.*, u.username, u.email AS account_email
               FROM orders o
-              LEFT JOIN users u ON o.user_id = u.user_id
+              LEFT JOIN users u ON o.user_id = u.id
               ORDER BY o.`" . $order_sort_column . "` DESC, o.id DESC";
     $res = mysqli_query($conn, $query);
 
@@ -235,13 +242,13 @@ $status_labels = [
                     <small>Admin Panel</small>
                 </div>
                 <nav class="nav flex-column">
-                    <a class="nav-link" href="admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
-                    <a class="nav-link" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
-                    <a class="nav-link active" href="view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
-                    <a class="nav-link" href="view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
-                    <a class="nav-link" href="view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
-                    <a class="nav-link" href="login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
-                    <a class="nav-link text-danger mt-3" href="adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
+                    <a class="nav-link" href="<?php echo BASE_URL; ?>/admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+                    <a class="nav-link" href="<?php echo BASE_URL; ?>/upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
+                    <a class="nav-link active" href="<?php echo BASE_URL; ?>/view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
+                    <a class="nav-link" href="<?php echo BASE_URL; ?>/view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
+                    <a class="nav-link" href="<?php echo BASE_URL; ?>/view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
+                    <a class="nav-link" href="<?php echo BASE_URL; ?>/login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
+                    <a class="nav-link text-danger mt-3" href="<?php echo BASE_URL; ?>/adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
                 </nav>
             </div>
 
@@ -361,13 +368,6 @@ $status_labels = [
                                                     <td>
                                                         <?php echo htmlspecialchars($order['delivery_address'] !== '' ? $order['delivery_address'] : ''); ?>
                                                     </td>
-
-                                                    <!-- <td>
-                                        <div><?php echo htmlspecialchars($order['product']); ?></div>
-                                        <?php if (!empty($order['delivery_address'])): ?>
-                                            <small class="text-muted"><?php echo htmlspecialchars($order['delivery_address']); ?></small>
-                                        <?php endif; ?>
-                                    </td> -->
                                                     <td><?php echo htmlspecialchars($order['quantity']); ?></td>
                                                     <td><?php echo htmlspecialchars($ordered_on_display); ?></td>
                                                     <td><?php echo htmlspecialchars($delivery_on_display); ?></td>
@@ -378,17 +378,17 @@ $status_labels = [
                                                     </td>
                                                     <td>
                                                         <div class="d-flex flex-wrap gap-1">
-                                                            <a href="order_detail.php?id=<?php echo intval($order['id']); ?>" class="btn btn-outline-success btn-sm">Details</a>
+                                                            <a href="<?php echo BASE_URL; ?>/order_detail.php?id=<?php echo intval($order['id']); ?>" class="btn btn-outline-success btn-sm">Details</a>
 
                                                             <?php if ($status === 'pending'): ?>
                                                                 <form method="POST" class="m-0">
                                                                     <input type="hidden" name="order_id" value="<?php echo intval($order['id']); ?>">
-                                                                    <input type="hidden" name="new_status" value="delivered">
+                                                                    <input type="hidden" name="new_status" value="approved">
                                                                     <button type="submit" class="btn btn-primary btn-sm">Approve</button>
                                                                 </form>
                                                             <?php elseif ($status === 'approved'): ?>
                                                                 <form method="POST" class="m-0">
-                                                                    <input type="hidden" name="order_id" value="<?php echo intval($order['']); ?>">
+                                                                    <input type="hidden" name="order_id" value="<?php echo intval($order['id']); ?>">
                                                                     <input type="hidden" name="new_status" value="delivered">
                                                                     <button type="submit" class="btn btn-success btn-sm">Delivered</button>
                                                                 </form>

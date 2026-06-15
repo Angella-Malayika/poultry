@@ -1,6 +1,14 @@
 <?php
-require_once __DIR__ . '/../auth_required.php';
-include 'connection.php';
+// Admin.php – Fixed paths using BASE_URL from config.php
+require_once dirname(__DIR__) . '/config.php';
+require_once dirname(__DIR__) . '/auth_required.php';
+require_once dirname(__DIR__) . '/connection.php';
+
+// Ensure only admin can access (auth_required.php already checks login, but we also need role check)
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header('Location: ' . BASE_URL . '/pages/login.php');
+    exit();
+}
 
 $photos = [];
 $table_check = mysqli_query($conn, "SHOW TABLES LIKE 'photos'");
@@ -206,17 +214,17 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
     <!-- Sidebar -->
     <div class="col-md-3 col-lg-2 sidebar d-none d-md-block">
         <div class="brand">
-            <h4><i class="bi bi-egg-fried"></i>Kalungu Quality Feeds </h4>
+            <h4><i class="bi bi-egg-fried"></i> Kalungu Quality Feeds</h4>
             <small>Admin Panel</small>
         </div>
         <nav class="nav flex-column">
-            <a class="nav-link active" href="admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
-            <a class="nav-link" href="upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
-            <a class="nav-link" href="view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
-            <a class="nav-link" href="view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
-            <a class="nav-link" href="view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
-            <a class="nav-link" href="login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
-            <a class="nav-link mt-auto text-danger" href="adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
+            <a class="nav-link active" href="<?php echo BASE_URL; ?>/admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
+            <a class="nav-link mt-auto text-danger" href="<?php echo BASE_URL; ?>/adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
         </nav>
     </div>
 
@@ -231,12 +239,11 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
             </div>
         </div>
 
-        <div class="p-4">
 
             <!-- Stats Row -->
             <div class="row g-3 mb-4">
                 <div class="col-sm-6 col-lg-3">
-                    <a href="view_orders.php" class="card stat-card shadow-sm stat-link" aria-label="Open orders page">
+                    <a href="<?php echo BASE_URL; ?>/view_orders.php" class="card stat-card shadow-sm stat-link" aria-label="Open orders page">
                         <div class="card-body d-flex align-items-center">
                             <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
                                 <i class="bi bi-truck text-warning fs-4"></i>
@@ -249,7 +256,7 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
                     </a>
                 </div>
                 <div class="col-sm-6 col-lg-3">
-                    <a href="view_orders.php" class="card stat-card shadow-sm stat-link" aria-label="Open delivered orders">
+                    <a href="<?php echo BASE_URL; ?>/view_orders.php" class="card stat-card shadow-sm stat-link" aria-label="Open delivered orders">
                         <div class="card-body d-flex align-items-center">
                             <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
                                 <i class="bi bi-check2-circle text-success fs-4"></i>
@@ -275,7 +282,7 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
                     </div>
                 </div>
                 <div class="col-sm-6 col-lg-3">
-                    <a href="view_messages.php" class="card stat-card shadow-sm stat-link" aria-label="Open messages page">
+                    <a href="<?php echo BASE_URL; ?>Admin/view_messages.php" class="card stat-card shadow-sm stat-link" aria-label="Open messages page">
                         <div class="card-body d-flex align-items-center">
                             <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
                                 <i class="bi bi-envelope text-warning fs-4"></i>
@@ -302,7 +309,6 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
             <!-- Photos Section -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="mb-0"><i class="bi bi-images"></i> Poultry Photos</h4>
-               
             </div>
 
             <div class="row g-3">
@@ -310,9 +316,9 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
                 <?php foreach ($photos as $row): ?>
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card photo-card shadow-sm">
-                        <img src="photo.php?id=<?php echo intval($row['id']); ?>" alt="Poultry Photo">
+                        <img src="<?php echo BASE_URL; ?>Admin/photo.php?id=<?php echo intval($row['id']); ?>" alt="Poultry Photo">
                         <div class="card-body text-center py-2">
-                            <a href="delete_photo.php?id=<?php echo intval($row['id']); ?>"
+                            <a href="<?php echo BASE_URL; ?>./delete_photo.php?id=<?php echo intval($row['id']); ?>"
                                class="btn btn-delete btn-sm w-100"
                                onclick="return confirm('Are you sure you want to delete this photo?');">
                                 <i class="bi bi-trash"></i> Delete
@@ -325,9 +331,8 @@ if ($messages_table_check && mysqli_num_rows($messages_table_check) > 0) {
                 <div class="col-12">
                     <div class="empty-state card shadow-sm">
                         <i class="bi bi-camera"></i>
-                        </h5>
                         <p>Upload your first poultry photo to get started.</p>
-                        <a href="upload_photo.php" class="btn btn-success"><i class="bi bi-plus-circle"></i> Add Product</a>
+                        <a href="<?php echo BASE_URL; ?>./upload_photo.php" class="btn btn-success"><i class="bi bi-plus-circle"></i> Add Product</a>
                     </div>
                 </div>
             <?php endif; ?>
