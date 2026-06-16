@@ -1,5 +1,5 @@
 <?php
-// Admin/order_detail.php – Fixed paths using BASE_URL from config.php
+// Admin/order_detail.php – Fixed join and redirects
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/auth_required.php';
 require_once dirname(__DIR__) . '/connection.php';
@@ -12,7 +12,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
 $order_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 if ($order_id <= 0) {
-    header('Location: ' . BASE_URL . '/view_orders.php');
+    header('Location: ' . BASE_URL . '/Admin/view_orders.php');
     exit();
 }
 
@@ -78,9 +78,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
     }
 }
 
-$stmt = $conn->prepare('SELECT o.*, u.email AS account_email, u.username FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE o.id = ? LIMIT 1');
+// FIX: join on u.user_id (not u.id)
+$stmt = $conn->prepare('SELECT o.*, u.email AS account_email, u.username FROM orders o LEFT JOIN users u ON o.user_id = u.user_id WHERE o.id = ? LIMIT 1');
 if (!$stmt) {
-    header('Location: ' . BASE_URL . '/view_orders.php');
+    header('Location: ' . BASE_URL . '/Admin/view_orders.php');
     exit();
 }
 
@@ -90,7 +91,7 @@ $result = $stmt->get_result();
 
 if (!$result || $result->num_rows === 0) {
     $stmt->close();
-    header('Location: ' . BASE_URL . '/view_orders.php');
+    header('Location: ' . BASE_URL . '/Admin/view_orders.php');
     exit();
 }
 
@@ -109,14 +110,12 @@ $status_colors = [
     'delivered' => 'success',
     'cancelled' => 'danger',
 ];
-
 $status_icons = [
     'pending' => 'fa-hourglass-half',
     'approved' => 'fa-thumbs-up',
     'delivered' => 'fa-check-circle',
     'cancelled' => 'fa-times-circle',
 ];
-
 $status_labels = [
     'pending' => 'New',
     'approved' => 'Approved',
@@ -124,28 +123,18 @@ $status_labels = [
     'cancelled' => 'Cancelled',
 ];
 
-$customer_name = trim($order['full_name'] ?? $order['Customer_Name'] ?? $order['customer_name'] ?? 'Unknown');
-$customer_email = trim($order['account_email'] ?? $order['Email'] ?? $order['email'] ?? '');
-$customer_phone = trim($order['phone'] ?? $order['Phone'] ?? '');
-$delivery_address = trim($order['delivery_address'] ?? $order['Delivery Address'] ?? '');
-$order_date = trim($order['order_date'] ?? $order['created_at'] ?? $order['date'] ?? '');
-$delivery_date = trim($order['delivery_date'] ?? $order['Delivery Date'] ?? '');
+$customer_name = trim($order['full_name'] ?? 'Unknown');
+$customer_email = trim($order['account_email'] ?? $order['email'] ?? '');
+$customer_phone = trim($order['phone'] ?? '');
+$delivery_address = trim($order['delivery_address'] ?? '');
+$order_date = trim($order['order_date'] ?? '');
+$delivery_date = trim($order['delivery_date'] ?? '');
 
-$order_date_display = 'N/A';
-if ($order_date !== '') {
-    $order_ts = strtotime($order_date);
-    $order_date_display = $order_ts ? date('M d, Y H:i', $order_ts) : $order_date;
-}
-
-$delivery_date_display = 'N/A';
-if ($delivery_date !== '') {
-    $delivery_ts = strtotime($delivery_date);
-    $delivery_date_display = $delivery_ts ? date('l, M d, Y', $delivery_ts) : $delivery_date;
-}
+$order_date_display = $order_date ? date('M d, Y H:i', strtotime($order_date)) : 'N/A';
+$delivery_date_display = $delivery_date ? date('l, M d, Y', strtotime($delivery_date)) : 'N/A';
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -153,89 +142,29 @@ if ($delivery_date !== '') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <style>
-        body {
-            background-color: #f8f9fa;
-            padding: 20px;
-        }
-        .detail-container {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        }
-        .info-card {
-            background: #ffffff;
-            border: 1px solid #e8ecef;
-            border-left: 4px solid #1f6b3f;
-            padding: 22px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        .info-card h5 {
-            margin-bottom: 20px;
-            font-weight: 700;
-            color: #0f3c2a;
-        }
-        .info-row {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eef2f4;
-        }
-        .info-row:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        .info-label {
-            font-size: 0.8rem;
-            color: #6c757d;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.4px;
-        }
-        .info-value {
-            font-size: 1.05rem;
-            font-weight: 500;
-            margin-top: 4px;
-            color: #1d2a22;
-        }
-        .status-section {
-            background: #f8f9fa;
-            border: 1px solid #e8ecef;
-            padding: 22px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        .status-badge {
-            font-size: 1rem;
-            padding: 10px 18px;
-            border-radius: 999px;
-        }
-        .action-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .quick-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        body { background-color: #f8f9fa; padding: 20px; }
+        .detail-container { background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .info-card { background: #ffffff; border: 1px solid #e8ecef; border-left: 4px solid #1f6b3f; padding: 22px; border-radius: 10px; margin-bottom: 20px; }
+        .info-card h5 { margin-bottom: 20px; font-weight: 700; color: #0f3c2a; }
+        .info-row { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eef2f4; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: 0.8rem; color: #6c757d; text-transform: uppercase; font-weight: 700; letter-spacing: 0.4px; }
+        .info-value { font-size: 1.05rem; font-weight: 500; margin-top: 4px; color: #1d2a22; }
+        .status-section { background: #f8f9fa; border: 1px solid #e8ecef; padding: 22px; border-radius: 10px; margin-bottom: 20px; }
+        .status-badge { font-size: 1rem; padding: 10px 18px; border-radius: 999px; }
+        .action-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        .quick-actions { display: flex; flex-wrap: wrap; gap: 10px; }
     </style>
 </head>
-
 <body>
     <div class="detail-container">
         <div class="mb-4">
-            <a href="<?php echo BASE_URL; ?>/view_orders.php" class="btn btn-outline-primary btn-sm">
+            <a href="<?php echo BASE_URL; ?>/Admin/view_orders.php" class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-arrow-left"></i> Back to Orders
             </a>
         </div>
 
-        <h1 class="mb-3">
-            <i class="fas fa-receipt"></i> Order #<?php echo htmlspecialchars((string) ($order['id'] ?? '')); ?>
-        </h1>
+        <h1 class="mb-3"><i class="fas fa-receipt"></i> Order #<?php echo htmlspecialchars($order['id'] ?? ''); ?></h1>
 
         <?php if ($message !== ''): ?>
             <div class="alert alert-<?php echo htmlspecialchars($message_type); ?> alert-dismissible fade show" role="alert">
@@ -248,46 +177,24 @@ if ($delivery_date !== '') {
             <div class="col-lg-6">
                 <div class="info-card">
                     <h5><i class="fas fa-user me-2"></i>Who Made This Order</h5>
-                    <div class="info-row">
-                        <div class="info-label">Full Name</div>
-                        <div class="info-value"><?php echo htmlspecialchars($customer_name); ?></div>
-                    </div>
+                    <div class="info-row"><div class="info-label">Full Name</div><div class="info-value"><?php echo htmlspecialchars($customer_name); ?></div></div>
                     <?php if (!empty($order['username'])): ?>
-                        <div class="info-row">
-                            <div class="info-label">Username</div>
-                            <div class="info-value">@<?php echo htmlspecialchars($order['username']); ?></div>
-                        </div>
+                        <div class="info-row"><div class="info-label">Username</div><div class="info-value">@<?php echo htmlspecialchars($order['username']); ?></div></div>
                     <?php endif; ?>
                     <?php if ($customer_email !== ''): ?>
-                        <div class="info-row">
-                            <div class="info-label">Email</div>
-                            <div class="info-value"><a href="mailto:<?php echo htmlspecialchars($customer_email); ?>"><?php echo htmlspecialchars($customer_email); ?></a></div>
-                        </div>
+                        <div class="info-row"><div class="info-label">Email</div><div class="info-value"><a href="mailto:<?php echo htmlspecialchars($customer_email); ?>"><?php echo htmlspecialchars($customer_email); ?></a></div></div>
                     <?php endif; ?>
                     <?php if ($customer_phone !== ''): ?>
-                        <div class="info-row">
-                            <div class="info-label">Phone</div>
-                            <div class="info-value"><a href="tel:<?php echo htmlspecialchars($customer_phone); ?>"><?php echo htmlspecialchars($customer_phone); ?></a></div>
-                        </div>
+                        <div class="info-row"><div class="info-label">Phone</div><div class="info-value"><a href="tel:<?php echo htmlspecialchars($customer_phone); ?>"><?php echo htmlspecialchars($customer_phone); ?></a></div></div>
                     <?php endif; ?>
                 </div>
             </div>
-
             <div class="col-lg-6">
                 <div class="info-card">
                     <h5><i class="fas fa-clock me-2"></i>Order Timeline</h5>
-                    <div class="info-row">
-                        <div class="info-label">Order Made On</div>
-                        <div class="info-value"><?php echo htmlspecialchars($order_date_display); ?></div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Should Be Delivered On</div>
-                        <div class="info-value"><?php echo htmlspecialchars($delivery_date_display); ?></div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Delivery Address</div>
-                        <div class="info-value"><?php echo htmlspecialchars($delivery_address !== '' ? $delivery_address : 'N/A'); ?></div>
-                    </div>
+                    <div class="info-row"><div class="info-label">Order Made On</div><div class="info-value"><?php echo htmlspecialchars($order_date_display); ?></div></div>
+                    <div class="info-row"><div class="info-label">Should Be Delivered On</div><div class="info-value"><?php echo htmlspecialchars($delivery_date_display); ?></div></div>
+                    <div class="info-row"><div class="info-label">Delivery Address</div><div class="info-value"><?php echo htmlspecialchars($delivery_address ?: 'N/A'); ?></div></div>
                 </div>
             </div>
         </div>
@@ -295,24 +202,13 @@ if ($delivery_date !== '') {
         <div class="info-card mb-4">
             <h5><i class="fas fa-cube me-2"></i>Product Details</h5>
             <div class="row">
-                <div class="col-md-6">
-                    <div class="info-row">
-                        <div class="info-label">Product</div>
-                        <div class="info-value"><?php echo htmlspecialchars((string) ($order['product'] ?? 'N/A')); ?></div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="info-row">
-                        <div class="info-label">Quantity</div>
-                        <div class="info-value"><?php echo htmlspecialchars((string) ($order['quantity'] ?? 'N/A')); ?></div>
-                    </div>
-                </div>
+                <div class="col-md-6"><div class="info-row"><div class="info-label">Product</div><div class="info-value"><?php echo htmlspecialchars($order['product'] ?? 'N/A'); ?></div></div></div>
+                <div class="col-md-6"><div class="info-row"><div class="info-label">Quantity</div><div class="info-value"><?php echo htmlspecialchars($order['quantity'] ?? 'N/A'); ?></div></div></div>
             </div>
         </div>
 
         <div class="status-section">
             <h5 class="mb-3"><i class="fas fa-tasks"></i> Order Status</h5>
-
             <span class="badge bg-<?php echo htmlspecialchars($status_colors[$current_status] ?? 'secondary'); ?> status-badge">
                 <i class="fas <?php echo htmlspecialchars($status_icons[$current_status] ?? 'fa-info-circle'); ?>"></i>
                 <?php echo htmlspecialchars($status_labels[$current_status] ?? ucfirst($current_status)); ?>
@@ -321,24 +217,13 @@ if ($delivery_date !== '') {
             <?php if ($current_status !== 'delivered'): ?>
                 <div class="quick-actions mt-3">
                     <?php if ($current_status === 'pending'): ?>
-                        <form method="POST" class="m-0">
-                            <input type="hidden" name="status" value="approved">
-                            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-thumbs-up me-1"></i>Approve Order</button>
-                        </form>
+                        <form method="POST" class="m-0"><input type="hidden" name="status" value="approved"><button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-thumbs-up me-1"></i>Approve Order</button></form>
                     <?php endif; ?>
-
                     <?php if ($current_status === 'approved'): ?>
-                        <form method="POST" class="m-0">
-                            <input type="hidden" name="status" value="delivered">
-                            <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check-circle me-1"></i>Mark Delivered</button>
-                        </form>
+                        <form method="POST" class="m-0"><input type="hidden" name="status" value="delivered"><button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check-circle me-1"></i>Mark Delivered</button></form>
                     <?php endif; ?>
-
                     <?php if (in_array($current_status, ['pending', 'approved'], true)): ?>
-                        <form method="POST" class="m-0" onsubmit="return confirm('Cancel this order?');">
-                            <input type="hidden" name="status" value="cancelled">
-                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-times-circle me-1"></i>Cancel</button>
-                        </form>
+                        <form method="POST" class="m-0" onsubmit="return confirm('Cancel this order?');"><input type="hidden" name="status" value="cancelled"><button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-times-circle me-1"></i>Cancel</button></form>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
@@ -357,25 +242,18 @@ if ($delivery_date !== '') {
                     </select>
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-outline-success">
-                        <i class="fas fa-save me-1"></i>Update Status
-                    </button>
+                    <button type="submit" class="btn btn-outline-success"><i class="fas fa-save me-1"></i>Update Status</button>
                 </div>
             </form>
         </div>
 
         <div class="action-buttons">
-            <a href="<?php echo BASE_URL; ?>/Admin/view_orders.php" class="btn btn-primary">
-                <i class="fas fa-list"></i> View All Orders
-            </a>
-            <a href="<?php echo BASE_URL; ?>/Admin/admin.php" class="btn btn-secondary">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
+            <a href="<?php echo BASE_URL; ?>/Admin/view_orders.php" class="btn btn-primary"><i class="fas fa-list"></i> View All Orders</a>
+            <a href="<?php echo BASE_URL; ?>/Admin/admin.php" class="btn btn-secondary"><i class="fas fa-home"></i> Dashboard</a>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
 <?php mysqli_close($conn); ?>

@@ -491,10 +491,10 @@ require_once dirname(__DIR__) . '/auth_required.php';
                 <h2 style="color:#2e7d32;">Join Our Growing Community of Successful Farmers</h2>
                 <p class="lead mb-4" style="color: #000000ff;">Ready to elevate your farming operation? Let's discuss how we can support your goals.</p>
                 <div class="cta-buttons">
-                    <a class="btn btn-lg me-3" href="<?php echo BASE_URL; ?>/order.php" style="background-color:#f9fbe7 ; color: #2e7d32; border: none;">
+                    <a class="btn btn-lg me-3" href="<?php echo BASE_URL; ?>/pages/order.php" style="background-color:#f9fbe7 ; color: #2e7d32; border: none;">
                         <i class="fas fa-shopping-cart me-2"></i>Start Your Order
                     </a>
-                    <a class="btn btn-lg" href="<?php echo BASE_URL; ?>/contact.php" style="background-color: white; color: #2e7d32; border: 2px solid #2e7d32;">
+                    <a class="btn btn-lg" href="<?php echo BASE_URL; ?>/pages/contact.php" style="background-color: white; color: #2e7d32; border: 2px solid #2e7d32;">
                         <i class="fas fa-calendar me-2"></i>Schedule Consultation
                     </a>
                 </div>

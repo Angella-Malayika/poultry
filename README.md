@@ -258,7 +258,7 @@ Check `email_config.php` – use a valid Gmail App Password, not your regular pa
 
 For support or inquiries:  
 **Email**: nakanwagiangella61@gmail.com
-**Phone**: +256 758 555 562 / +256 758 707 297
+**Phone**: +256 750182949 / +256 758 707 297
 
 ---
 

@@ -1,11 +1,24 @@
 <?php
-// pages/product-category.php – Fixed paths using BASE_URL from config.php
-
+// pages/product-category.php – Fixed image URLs and CSS
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/auth_required.php';
 require_once dirname(__DIR__) . '/connection.php';
 
 $fallback_image = BASE_URL . '/images/fs.broiler-chicks.avif';
+
+// Helper to convert relative image path to absolute URL
+function get_absolute_image_url($image_path) {
+    global $fallback_image;
+    if (empty($image_path)) {
+        return $fallback_image;
+    }
+    // If already absolute (starts with http://, https://, or /), return as is
+    if (preg_match('/^(https?:|\/)/i', $image_path)) {
+        return $image_path;
+    }
+    // Otherwise prepend BASE_URL and a slash
+    return BASE_URL . '/' . ltrim($image_path, '/');
+}
 
 function is_recent_product(string $created_at, int $days = 14): bool
 {
@@ -53,8 +66,9 @@ if ($products_result) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($category_data['title']); ?> | Kalungu Quality Feeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/joy.css"/>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <!-- Use single styles.css (not joy.css) -->
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .category-hero {
             background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
@@ -91,12 +105,6 @@ if ($products_result) {
             font-weight: bold;
             margin-bottom: 0.5rem;
         }
-        .product-card .price {
-            color: #2e7d32;
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin: 1rem 0;
-        }
         .btn-view {
             background-color: #2e7d32;
             color: white;
@@ -130,6 +138,10 @@ if ($products_result) {
             border-radius: 8px;
             margin-bottom: 2rem;
             border-left: 4px solid #2e7d32;
+        }
+         .container p, .container h1 {
+            color: #d1e7dd;
+            text-align:center;
         }
     </style>
 </head>
@@ -171,7 +183,8 @@ if ($products_result) {
                 <?php foreach ($products as $product): ?>
                     <div class="col-md-6 col-lg-4">
                         <div class="card product-card">
-                            <img src="<?php echo htmlspecialchars(!empty($product['image']) ? $product['image'] : $fallback_image); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                            <!-- FIXED: use get_absolute_image_url() for correct image path -->
+                            <img src="<?php echo get_absolute_image_url($product['image']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($product['name']); ?>">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex flex-wrap gap-2 mb-2">
                                     <?php if (is_recent_product((string) ($product['created_at'] ?? ''))): ?>
@@ -211,6 +224,6 @@ if ($products_result) {
 
     <?php include dirname(__DIR__) . '/includes/footer.php'; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

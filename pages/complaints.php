@@ -28,7 +28,7 @@ $email_value = $_SESSION['email'] ?? '';
             border-radius: 16px;
             box-shadow: 0 18px 40px rgba(18, 32, 23, 0.08);
         }
-        .container p{
+        .container p, .container h1 {
             color: #d1e7dd;
         }
     </style>
@@ -38,7 +38,7 @@ $email_value = $_SESSION['email'] ?? '';
 
 <section class="feedback-hero">
     <div class="container">
-        <h1><i class="fas fa-comment-dots me-2"></i>Customer Feedback</h1>
+        <h1><i class="fas fa-comment-dots me-2"style="color: #fff;" ></i>Customer Feedback</h1>
         <p class="lead mb-0">Report issues, share complaints, or send appreciation.</p>
     </div>
 </section>

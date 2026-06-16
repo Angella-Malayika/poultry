@@ -1,5 +1,5 @@
 <?php
-// Admin/view_orders.php – Fixed paths using BASE_URL from config.php
+// Admin/view_orders.php – Fixed SQL join and paths
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/auth_required.php';
 require_once dirname(__DIR__) . '/connection.php';
@@ -63,7 +63,6 @@ if ($table_check && mysqli_num_rows($table_check) > 0) {
             $columns[] = $col['Field'];
         }
     }
-
     foreach (['order_date', 'created_at', 'date', 'id'] as $candidate) {
         if (in_array($candidate, $columns, true)) {
             $order_sort_column = $candidate;
@@ -71,9 +70,10 @@ if ($table_check && mysqli_num_rows($table_check) > 0) {
         }
     }
 
+    // FIX: join on u.user_id (not u.id)
     $query = "SELECT o.*, u.username, u.email AS account_email
               FROM orders o
-              LEFT JOIN users u ON o.user_id = u.id
+              LEFT JOIN users u ON o.user_id = u.user_id
               ORDER BY o.`" . $order_sort_column . "` DESC, o.id DESC";
     $res = mysqli_query($conn, $query);
 
@@ -130,7 +130,6 @@ $status_labels = [
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -138,291 +137,170 @@ $status_labels = [
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        :root {
-            --leaf-900: #0f3c2a;
-            --leaf-700: #1f6b3f;
-        }
-
-        body {
-            background: #f0f2f5;
-        }
-
+        :root { --leaf-900: #0f3c2a; --leaf-700: #1f6b3f; }
+        body { background: #f0f2f5; }
         .sidebar {
             background: linear-gradient(135deg, var(--leaf-900), var(--leaf-700));
             min-height: 100vh;
             color: #fff;
             padding-top: 20px;
         }
-
         .sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255,255,255,0.8);
             padding: 12px 20px;
             border-radius: 8px;
             margin: 4px 10px;
             transition: all 0.2s;
         }
-
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.15);
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.15);
             color: #fff;
         }
-
-        .sidebar .nav-link i {
-            margin-right: 10px;
-            font-size: 1.1rem;
-        }
-
-        .brand {
-            padding: 10px 20px 30px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            margin-bottom: 15px;
-        }
-
-        .brand h4 {
-            margin: 0;
-            font-weight: 700;
-        }
-
-        .brand small {
-            opacity: 0.7;
-        }
-
-        .top-bar {
-            background: #fff;
-            border-bottom: 1px solid #e0e0e0;
-            padding: 15px 25px;
-        }
-
-        .orders-table thead th {
-            background: #1b5e20;
-            color: #fff;
-            border: none;
-        }
-
-        .orders-table tbody tr {
-            transition: background 0.15s;
-        }
-
-        .orders-table tbody tr:hover {
-            background: #f1f8f1;
-        }
-
-        .order-row-new {
-            background: #fff8e1;
-        }
-
-        .stats-card {
-            border: 0;
-            border-radius: 12px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #888;
-        }
-
-        .empty-state i {
-            font-size: 4rem;
-            display: block;
-            margin-bottom: 15px;
-            color: #ccc;
-        }
+        .sidebar .nav-link i { margin-right: 10px; font-size: 1.1rem; }
+        .brand { padding: 10px 20px 30px; border-bottom: 1px solid rgba(255,255,255,0.15); margin-bottom: 15px; }
+        .brand h4 { margin: 0; font-weight: 700; }
+        .brand small { opacity: 0.7; }
+        .top-bar { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 15px 25px; }
+        .orders-table thead th { background: #1b5e20; color: #fff; border: none; }
+        .orders-table tbody tr:hover { background: #f1f8f1; }
+        .order-row-new { background: #fff8e1; }
+        .stats-card { border: 0; border-radius: 12px; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #888; }
+        .empty-state i { font-size: 4rem; display: block; margin-bottom: 15px; color: #ccc; }
     </style>
 </head>
-
 <body>
-    <div class="container-fluid">
-        <div class="row">
+<div class="container-fluid">
+<div class="row">
 
-            <div class="col-md-3 col-lg-2 sidebar d-none d-md-block">
-                <div class="brand">
-                    <h4><i class="bi bi-egg-fried"></i> Kalungu Quality Feeds</h4>
-                    <small>Admin Panel</small>
-                </div>
-                <nav class="nav flex-column">
-                    <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
-                    <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
-                    <a class="nav-link active" href="<?php echo BASE_URL; ?>/Admin/view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
-                    <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
-                    <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
-                    <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
-                    <a class="nav-link text-danger mt-3" href="<?php echo BASE_URL; ?>/Admin/adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
-                </nav>
+    <div class="col-md-3 col-lg-2 sidebar d-none d-md-block">
+        <div class="brand">
+            <h4><i class="bi bi-egg-fried"></i> Kalungu Quality Feeds</h4>
+            <small>Admin Panel</small>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/manage_products.php"><i class="bi bi-list-ul"></i> Manage Products</a>
+            <a class="nav-link active" href="<?php echo BASE_URL; ?>/Admin/view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/login_activity.php"><i class="bi bi-person-check"></i> Login Activity</a>
+            <a class="nav-link text-danger mt-3" href="<?php echo BASE_URL; ?>/Admin/adlogout.php"><i class="bi bi-box-arrow-left"></i> Logout</a>
+        </nav>
+    </div>
+
+    <div class="col-md-9 col-lg-10 p-0">
+        <div class="top-bar d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-cart3 me-2"></i>Order Management</h5>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
             </div>
+        </div>
 
-            <div class="col-md-9 col-lg-10 p-0">
-                <div class="top-bar d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-cart3 me-2"></i>Order Management</h5>
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-muted">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
+        <div class="p-4">
+            <div class="row g-3 mb-4">
+                <div class="col-sm-4">
+                    <div class="card stats-card shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted mb-1">New Orders</h6>
+                            <h3 class="mb-0 text-warning"><?php echo $new_orders; ?></h3>
+                        </div>
                     </div>
                 </div>
-
-                <div class="p-4">
-                    <div class="row g-3 mb-4">
-                        <div class="col-sm-4">
-                            <div class="card stats-card shadow-sm">
-                                <div class="card-body">
-                                    <h6 class="text-muted mb-1">New Orders</h6>
-                                    <h3 class="mb-0 text-warning"><?php echo $new_orders; ?></h3>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="card stats-card shadow-sm">
-                                <div class="card-body">
-                                    <h6 class="text-muted mb-1">Approved</h6>
-                                    <h3 class="mb-0 text-primary"><?php echo $approved_orders; ?></h3>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="card stats-card shadow-sm">
-                                <div class="card-body">
-                                    <h6 class="text-muted mb-1">Delivered</h6>
-                                    <h3 class="mb-0 text-success"><?php echo $delivered_orders; ?></h3>
-                                </div>
-                            </div>
+                <div class="col-sm-4">
+                    <div class="card stats-card shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted mb-1">Approved</h6>
+                            <h3 class="mb-0 text-primary"><?php echo $approved_orders; ?></h3>
                         </div>
                     </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="mb-0">All Orders
-                            <span class="badge bg-success ms-2"><?php echo count($orders); ?></span>
-                        </h4>
+                </div>
+                <div class="col-sm-4">
+                    <div class="card stats-card shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted mb-1">Delivered</h6>
+                            <h3 class="mb-0 text-success"><?php echo $delivered_orders; ?></h3>
+                        </div>
                     </div>
-
-                    <?php if ($flash_message !== ''): ?>
-                        <div class="alert alert-<?php echo htmlspecialchars($flash_type); ?> alert-dismissible fade show" role="alert">
-                            <?php echo htmlspecialchars($flash_message); ?>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if (count($orders) > 0): ?>
-                        <div class="card shadow-sm border-0 rounded-3">
-                            <div class="card-body p-0">
-                                <div class="table-responsive">
-                                    <table class="table orders-table align-middle mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Customer</th>
-                                                <th>Contact</th>
-                                                <th>Product</th>
-                                                <th>Delivery Address</th>
-                                                <th>Qty</th>
-                                                <th>Ordered On</th>
-                                                <th>Delivery Date</th>
-                                                <th>Status</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($orders as $i => $order):
-                                                $status = strtolower($order['status'] ?? 'pending');
-                                                $badge = $status_colors[$status] ?? 'secondary';
-                                                $status_label = $status_labels[$status] ?? ucfirst($status);
-                                                $is_new = ($status === 'pending');
-
-                                                $ordered_on_display = 'N/A';
-                                                if (!empty($order['order_date'])) {
-                                                    $ordered_ts = strtotime($order['order_date']);
-                                                    $ordered_on_display = $ordered_ts ? date('M d, Y H:i', $ordered_ts) : $order['order_date'];
-                                                }
-
-                                                $delivery_on_display = 'N/A';
-                                                if (!empty($order['delivery_date'])) {
-                                                    $delivery_ts = strtotime($order['delivery_date']);
-                                                    $delivery_on_display = $delivery_ts ? date('M d, Y', $delivery_ts) : $order['delivery_date'];
-                                                }
-
-                                                $show_username = false;
-                                                if (!empty($order['username'])) {
-                                                    $customer_key = strtolower(trim((string) $order['customer']));
-                                                    $username_key = strtolower(trim((string) $order['username']));
-                                                    $show_username = ($customer_key === '' || $customer_key !== $username_key);
-                                                }
-                                            ?>
-                                                <tr class="<?php echo $is_new ? 'order-row-new' : ''; ?>">
-                                                    <td><?php echo $i + 1; ?></td>
-                                                    <td>
-                                                        <div class="fw-bold"><?php echo htmlspecialchars($order['customer']); ?></div>
-                                                        <?php if ($show_username): ?>
-                                                            <small class="text-muted">@<?php echo htmlspecialchars($order['username']); ?></small>
-                                                        <?php endif; ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php if (!empty($order['email'])): ?>
-                                                            <div><a href="mailto:<?php echo htmlspecialchars($order['email']); ?>"><?php echo htmlspecialchars($order['email']); ?></a></div>
-                                                        <?php endif; ?>
-                                                        <?php if (!empty($order['phone'])): ?>
-                                                            <div><a href="tel:<?php echo htmlspecialchars($order['phone']); ?>"><?php echo htmlspecialchars($order['phone']); ?></a></div>
-                                                        <?php endif; ?>
-                                                    </td>
-                                                    <td>
-                                                        <div><?php echo htmlspecialchars($order['product']); ?></div>
-                                                    </td>
-                                                    <td>
-                                                        <?php echo htmlspecialchars($order['delivery_address'] !== '' ? $order['delivery_address'] : ''); ?>
-                                                    </td>
-                                                    <td><?php echo htmlspecialchars($order['quantity']); ?></td>
-                                                    <td><?php echo htmlspecialchars($ordered_on_display); ?></td>
-                                                    <td><?php echo htmlspecialchars($delivery_on_display); ?></td>
-                                                    <td>
-                                                        <span class="badge rounded-pill bg-<?php echo $badge; ?>">
-                                                            <?php echo htmlspecialchars($status_label); ?>
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <div class="d-flex flex-wrap gap-1">
-                                                            <a href="<?php echo BASE_URL; ?>/order_detail.php?id=<?php echo intval($order['id']); ?>" class="btn btn-outline-success btn-sm">Details</a>
-
-                                                            <?php if ($status === 'pending'): ?>
-                                                                <form method="POST" class="m-0">
-                                                                    <input type="hidden" name="order_id" value="<?php echo intval($order['id']); ?>">
-                                                                    <input type="hidden" name="new_status" value="approved">
-                                                                    <button type="submit" class="btn btn-primary btn-sm">Approve</button>
-                                                                </form>
-                                                            <?php elseif ($status === 'approved'): ?>
-                                                                <form method="POST" class="m-0">
-                                                                    <input type="hidden" name="order_id" value="<?php echo intval($order['id']); ?>">
-                                                                    <input type="hidden" name="new_status" value="delivered">
-                                                                    <button type="submit" class="btn btn-success btn-sm">Delivered</button>
-                                                                </form>
-                                                            <?php endif; ?>
-
-                                                            <?php if (in_array($status, ['pending', 'approved'], true)): ?>
-                                                                <form method="POST" class="m-0" onsubmit="return confirm('Cancel this order?');">
-                                                                    <input type="hidden" name="order_id" value="<?php echo intval($order['id']); ?>">
-                                                                    <input type="hidden" name="new_status" value="cancelled">
-                                                                    <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
-                                                                </form>
-                                                            <?php endif; ?>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    <?php else: ?>
-                        <div class="card shadow-sm empty-state">
-                            <i class="bi bi-cart-x"></i>
-                            <h5>No orders yet</h5>
-                            <p class="text-muted">Customer orders will appear here once they start placing them.</p>
-                        </div>
-                    <?php endif; ?>
                 </div>
             </div>
 
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0">All Orders <span class="badge bg-success ms-2"><?php echo count($orders); ?></span></h4>
+            </div>
+
+            <?php if ($flash_message !== ''): ?>
+                <div class="alert alert-<?php echo htmlspecialchars($flash_type); ?> alert-dismissible fade show" role="alert">
+                    <?php echo htmlspecialchars($flash_message); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+
+            <?php if (count($orders) > 0): ?>
+                <div class="card shadow-sm border-0 rounded-3">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table orders-table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th><th>Customer</th><th>Contact</th><th>Product</th><th>Delivery Address</th><th>Qty</th><th>Ordered On</th><th>Delivery Date</th><th>Status</th><th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($orders as $i => $order):
+                                        $status = strtolower($order['status'] ?? 'pending');
+                                        $badge = $status_colors[$status] ?? 'secondary';
+                                        $status_label = $status_labels[$status] ?? ucfirst($status);
+                                        $is_new = ($status === 'pending');
+                                        $ordered_on_display = !empty($order['order_date']) ? date('M d, Y H:i', strtotime($order['order_date'])) : 'N/A';
+                                        $delivery_on_display = !empty($order['delivery_date']) ? date('M d, Y', strtotime($order['delivery_date'])) : 'N/A';
+                                        $show_username = !empty($order['username']) && $order['customer'] !== $order['username'];
+                                    ?>
+                                        <tr class="<?php echo $is_new ? 'order-row-new' : ''; ?>">
+                                            <td><?php echo $i + 1; ?></td>
+                                            <td>
+                                                <div class="fw-bold"><?php echo htmlspecialchars($order['customer']); ?></div>
+                                                <?php if ($show_username): ?><small class="text-muted">@<?php echo htmlspecialchars($order['username']); ?></small><?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php if (!empty($order['email'])): ?><div><a href="mailto:<?php echo htmlspecialchars($order['email']); ?>"><?php echo htmlspecialchars($order['email']); ?></a></div><?php endif; ?>
+                                                <?php if (!empty($order['phone'])): ?><div><a href="tel:<?php echo htmlspecialchars($order['phone']); ?>"><?php echo htmlspecialchars($order['phone']); ?></a></div><?php endif; ?>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($order['product']); ?></td>
+                                            <td><?php echo htmlspecialchars($order['delivery_address']); ?></td>
+                                            <td><?php echo htmlspecialchars($order['quantity']); ?></td>
+                                            <td><?php echo htmlspecialchars($ordered_on_display); ?></td>
+                                            <td><?php echo htmlspecialchars($delivery_on_display); ?></td>
+                                            <td><span class="badge rounded-pill bg-<?php echo $badge; ?>"><?php echo htmlspecialchars($status_label); ?></span></td>
+                                            <td>
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    <a href="<?php echo BASE_URL; ?>/Admin/order_detail.php?id=<?php echo intval($order['id']); ?>" class="btn btn-outline-success btn-sm">Details</a>
+                                                    <?php if ($status === 'pending'): ?>
+                                                        <form method="POST" class="m-0"><input type="hidden" name="order_id" value="<?php echo intval($order['id']); ?>"><input type="hidden" name="new_status" value="approved"><button type="submit" class="btn btn-primary btn-sm">Approve</button></form>
+                                                    <?php elseif ($status === 'approved'): ?>
+                                                        <form method="POST" class="m-0"><input type="hidden" name="order_id" value="<?php echo intval($order['id']); ?>"><input type="hidden" name="new_status" value="delivered"><button type="submit" class="btn btn-success btn-sm">Delivered</button></form>
+                                                    <?php endif; ?>
+                                                    <?php if (in_array($status, ['pending', 'approved'], true)): ?>
+                                                        <form method="POST" class="m-0" onsubmit="return confirm('Cancel this order?');"><input type="hidden" name="order_id" value="<?php echo intval($order['id']); ?>"><input type="hidden" name="new_status" value="cancelled"><button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button></form>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            <?php else: ?>
+                <div class="card shadow-sm empty-state"><i class="bi bi-cart-x"></i><h5>No orders yet</h5><p class="text-muted">Customer orders will appear here once they start placing them.</p></div>
+            <?php endif; ?>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
 
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

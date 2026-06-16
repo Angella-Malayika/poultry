@@ -295,8 +295,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <section class="order-hero">
         <div class="container">
-            <h1><i class="fas fa-shopping-cart me-2"></i>Place Your Order</h1>
-            <p class="lead mb-0">Quality products, reliable delivery, just for you</p>
+            <h1 style="color: #fff;"><i class="fas fa-shopping-cart me-2" style="color: #fff;"></i>Place Your Order</h1>
+            <p class="lead mb-0" style="color: #fff;">Quality products, reliable delivery, just for you</p>
         </div>
     </section>
 
