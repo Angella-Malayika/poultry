@@ -209,7 +209,7 @@ $unread_count = count(array_filter($messages, static function ($message) {
         <nav class="nav flex-column">
             <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/admin.php"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
             <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/upload_photo.php"><i class="bi bi-cloud-arrow-up"></i> Add Product</a>
-            <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/manage_products.php"><i class="bi bi-list-ul"></i> Manage Products</a>
+            <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/manage_product.php"><i class="bi bi-list-ul"></i> Manage Products</a>
             <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/view_orders.php"><i class="bi bi-cart3"></i> Orders</a>
             <a class="nav-link active" href="<?php echo BASE_URL; ?>/Admin/view_messages.php"><i class="bi bi-envelope"></i> Messages</a>
             <a class="nav-link" href="<?php echo BASE_URL; ?>/Admin/view_complaints.php"><i class="bi bi-chat-square-text"></i> Complaints</a>
